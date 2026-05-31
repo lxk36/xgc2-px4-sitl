@@ -136,6 +136,16 @@ APT_REPO_KNOWN_HOSTS
 `APT_REPO_HOST` is the SSH publish host. `APT_REPO_PORT` is the container SSH
 publish port. `APT_REPO_SSH_KEY` is the private half of the CI deploy key whose
 public half is installed in the APT server `authorized_keys`.
+`APT_REPO_SSH_KEY` must be the full multi-line private key, including these
+first and last lines:
+
+```text
+-----BEGIN OPENSSH PRIVATE KEY-----
+...
+-----END OPENSSH PRIVATE KEY-----
+```
+
+Do not paste the `.pub` public key into `APT_REPO_SSH_KEY`.
 `APT_REPO_KNOWN_HOSTS` is the pinned SSH host key line for strict host checking.
 It proves to CI that the SSH endpoint is the expected APT server before any
 package data is sent.
