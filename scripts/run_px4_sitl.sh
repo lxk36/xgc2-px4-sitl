@@ -45,8 +45,14 @@ if [[ ! -x "${PX4_BIN}" ]]; then
   exit 1
 fi
 
-if [[ ! -f "${PX4_ETC}/${STARTUP_SCRIPT}" ]]; then
-  echo "PX4 startup script is missing: ${PX4_ETC}/${STARTUP_SCRIPT}" >&2
+if [[ "${STARTUP_SCRIPT}" == etc/* ]]; then
+  STARTUP_SCRIPT_PATH="${RUNTIME_ROOT}/${STARTUP_SCRIPT}"
+else
+  STARTUP_SCRIPT_PATH="${PX4_ETC}/${STARTUP_SCRIPT}"
+fi
+
+if [[ ! -f "${STARTUP_SCRIPT_PATH}" ]]; then
+  echo "PX4 startup script is missing: ${STARTUP_SCRIPT_PATH}" >&2
   exit 1
 fi
 

@@ -35,6 +35,9 @@ Later Ubuntu 20.04 compatible PX4 lines can use separate package names such as `
 Once the GitHub Pages APT repository is enabled, install the runtime with:
 
 ```bash
+echo "deb [trusted=yes arch=amd64] https://lxk36.github.io/px4_sitl_runtime/apt focal main" | \
+  sudo tee /etc/apt/sources.list.d/xgc2-px4-sitl.list
+
 sudo apt update
 sudo apt install ros-noetic-xgc2-px4-sitl-1-12
 ```
@@ -116,6 +119,64 @@ scripts/build_deb.sh \
   --output-dir debs
 ```
 
+Create a local static APT repository from built `.deb` files:
+
+```bash
+scripts/build_apt_repository.sh \
+  --deb-dir debs \
+  --repo-dir /tmp/xgc2-px4-apt \
+  --distribution focal
+```
+
+Install through a local `file:` APT source on the current host:
+
+```bash
+scripts/install_from_local_apt_repository.sh \
+  --deb-dir debs \
+  --repo-dir /tmp/xgc2-px4-apt \
+  --distribution focal
+```
+
+Check an already installed runtime:
+
+```bash
+scripts/check_installed_runtime.sh
+```
+
+Remove the local test source when finished:
+
+```bash
+sudo rm -f /etc/apt/sources.list.d/xgc2-px4-sitl-local.list
+sudo apt update
+```
+
+## GitHub Pages APT Hosting
+
+GitHub Pages should serve the `gh-pages` branch from the repository root. The published tree is:
+
+```text
+index.html
+apt/
+├── dists/
+│   └── focal/main/binary-amd64/
+│       ├── Packages
+│       └── Packages.gz
+└── pool/main/
+    └── ros-noetic-xgc2-px4-sitl-1-12_1.12.3-1_amd64.deb
+```
+
+Publishing is manual for now:
+
+1. Let `build-runtime` finish successfully.
+2. Open the successful run and copy its run id from the URL.
+3. Run the `publish-pages-apt` workflow with:
+   - `run_id`: the successful build-runtime run id
+   - `distribution`: `focal`
+   - `component`: `main`
+   - `architecture`: `amd64`
+
+The workflow downloads the `px4-sitl-runtime-debs` artifact, updates `apt/` with `dpkg-scanpackages`, and pushes the static tree to `gh-pages`.
+
 ## CI
 
 The `build-runtime` GitHub Actions workflow:
@@ -133,4 +194,4 @@ The `build-runtime` GitHub Actions workflow:
 11. Checks `px4_sitl_runtime_1_12` and `sitl_gazebo_1_12` with `rospack`.
 12. Uploads the `.deb` as a workflow artifact.
 
-APT publishing is intentionally a later stage. GitHub Pages can host the static Debian repository metadata and `pool/` tree after the build artifact is proven installable.
+APT publishing is intentionally manual until the package build is stable. GitHub Pages hosts only static files, so users consume it with normal `apt` after the `gh-pages` branch is published.

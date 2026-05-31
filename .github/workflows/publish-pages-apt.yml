@@ -1,0 +1,91 @@
+name: publish-pages-apt
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Successful build-runtime run id that uploaded px4-sitl-runtime-debs"
+        required: true
+      distribution:
+        description: "Ubuntu codename, for example focal or noble"
+        required: true
+        default: "focal"
+      component:
+        description: "APT component"
+        required: true
+        default: "main"
+      architecture:
+        description: "Debian architecture"
+        required: true
+        default: "amd64"
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+
+      - name: Install APT repository tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends apt-utils dpkg-dev
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.run_id }}
+          name: px4-sitl-runtime-debs
+          path: incoming-debs
+
+      - name: Checkout gh-pages worktree
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          pages_dir="$RUNNER_TEMP/gh-pages"
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
+            git fetch origin gh-pages
+            git worktree add "$pages_dir" origin/gh-pages
+          else
+            git worktree add --detach "$pages_dir"
+            git -C "$pages_dir" switch --orphan gh-pages
+            git -C "$pages_dir" rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          mkdir -p "$pages_dir"
+          cat > "$pages_dir/index.html" <<'EOF'
+          <!doctype html>
+          <html>
+            <head><meta charset="utf-8"><title>XGC2 PX4 SITL APT</title></head>
+            <body><h1>XGC2 PX4 SITL APT Repository</h1><p>APT metadata is under <a href="apt/">apt/</a>.</p></body>
+          </html>
+          EOF
+
+      - name: Build static APT tree
+        run: |
+          scripts/build_apt_repository.sh \
+            --deb-dir incoming-debs \
+            --repo-dir "$RUNNER_TEMP/gh-pages/apt" \
+            --distribution "${{ inputs.distribution }}" \
+            --component "${{ inputs.component }}" \
+            --architecture "${{ inputs.architecture }}"
+
+      - name: Publish gh-pages
+        run: |
+          set -euo pipefail
+          pages_dir="$RUNNER_TEMP/gh-pages"
+          git -C "$pages_dir" add index.html apt
+          if git -C "$pages_dir" diff --cached --quiet; then
+            echo "No APT repository changes to publish."
+            exit 0
+          fi
+          git -C "$pages_dir" commit -m "Publish APT packages for ${{ inputs.distribution }}"
+          git -C "$pages_dir" push origin HEAD:gh-pages
