@@ -96,7 +96,9 @@ docker run --rm \
       META_ROS_PACKAGE="$(manifest_value meta_ros_package)"
       scripts/check_px4_runtime.sh "${INSTALL_PREFIX}"
       scripts/check_gz_sim_runtime.sh "${GZ_SIM_RUNTIME_PREFIX}"
+      set +u
       source /opt/ros/jazzy/setup.bash
+      set -u
       test "$(ros2 pkg prefix "${RUNTIME_ROS_PACKAGE}")" = "/opt/ros/jazzy"
       test "$(ros2 pkg prefix "${GZ_SIM_ROS_PACKAGE}")" = "/opt/ros/jazzy"
       test "$(ros2 pkg prefix "${META_ROS_PACKAGE}")" = "/opt/ros/jazzy"
