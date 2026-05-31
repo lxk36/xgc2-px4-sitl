@@ -41,7 +41,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ inputs.run_id }}
-          name: px4-sitl-runtime-debs
+          name: px4-sitl-runtime-debs-${{ inputs.architecture }}
           path: incoming-debs
 
       - name: Checkout gh-pages worktree

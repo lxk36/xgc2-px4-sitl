@@ -173,23 +173,24 @@ Publishing is manual for now:
    - `component`: `main`
    - `architecture`: `amd64`
 
-The workflow downloads the `px4-sitl-runtime-debs` artifact, updates `apt/` with `dpkg-scanpackages`, and pushes the static tree to `gh-pages`.
+The workflow downloads the architecture-specific `px4-sitl-runtime-debs-<arch>` artifact, updates `apt/` with `dpkg-scanpackages`, and pushes the static tree to `gh-pages`.
 
 ## CI
 
 The `build-runtime` GitHub Actions workflow:
 
 1. Reads `manifest/px4_runtime.yaml`.
-2. Pulls `osrf/ros:noetic-desktop-full-focal`.
-3. Runs the full build inside a disposable Docker container.
-4. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
-5. Runs PX4's Ubuntu dependency setup when present.
-6. Builds `px4_sitl_default` and the Gazebo Classic `sitl_gazebo` target.
-7. Extracts PX4 runtime files, Gazebo Classic models, worlds, and plugins.
-8. Runs lightweight PX4 runtime and package layout checks.
-9. Builds `ros-noetic-xgc2-px4-sitl-1-12`.
-10. Installs the `.deb` inside the container.
-11. Checks `px4_sitl_runtime_1_12` and `sitl_gazebo_1_12` with `rospack`.
-12. Uploads the `.deb` as a workflow artifact.
+2. Builds in parallel for `amd64` and `arm64` on native GitHub-hosted runners.
+3. Pulls `osrf/ros:noetic-desktop-full-focal`.
+4. Runs the full build inside a disposable Docker container.
+5. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
+6. Runs PX4's Ubuntu dependency setup when present.
+7. Builds `px4_sitl_default` and the Gazebo Classic `sitl_gazebo` target.
+8. Extracts PX4 runtime files, Gazebo Classic models, worlds, and plugins.
+9. Runs lightweight PX4 runtime and package layout checks.
+10. Builds `ros-noetic-xgc2-px4-sitl-1-12`.
+11. Installs the `.deb` inside the container.
+12. Checks `px4_sitl_runtime_1_12` and `sitl_gazebo_1_12` with `rospack`.
+13. Uploads the `.deb` as a workflow artifact named by Debian architecture.
 
 APT publishing is intentionally manual until the package build is stable. GitHub Pages hosts only static files, so users consume it with normal `apt` after the `gh-pages` branch is published.

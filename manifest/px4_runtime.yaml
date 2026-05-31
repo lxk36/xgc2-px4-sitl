@@ -6,6 +6,7 @@ ros_distro: noetic
 ubuntu_codename: focal
 architectures:
   - amd64
+  - arm64
 runtime_ros_package: px4_sitl_runtime_1_12
 gazebo_ros_package: sitl_gazebo_1_12
 install_prefix: /opt/ros/noetic/share/px4_sitl_runtime_1_12/runtime
