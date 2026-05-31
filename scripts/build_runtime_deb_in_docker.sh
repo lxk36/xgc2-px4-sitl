@@ -77,9 +77,15 @@ docker run --rm \
       ninja-build \
       python3 \
       python3-dev \
+      python3-empy \
+      python3-jinja2 \
+      python3-numpy \
+      python3-packaging \
       python3-pip \
       python3-setuptools \
+      python3-toml \
       python3-wheel \
+      python3-yaml \
       ros-jazzy-ros2pkg \
       rsync \
       sudo \
