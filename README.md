@@ -32,9 +32,15 @@ Other Ubuntu 20.04 compatible PX4 lines can use separate package names such as `
 
 ## User Installation
 
-Once the GitHub Pages APT repository is enabled, install the runtime with:
+Once the self-hosted APT repository is enabled, install the runtime with:
 
 ```bash
+curl -fsSL https://APT_DOMAIN/xgc2-archive-keyring.gpg | \
+  sudo gpg --dearmor -o /usr/share/keyrings/xgc2-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/xgc2-archive-keyring.gpg arch=amd64] https://APT_DOMAIN focal main" | \
+  sudo tee /etc/apt/sources.list.d/xgc2.list
+
 sudo apt update
 sudo apt install ros-noetic-xgc2-px4-sitl-1-14
 ```
@@ -131,5 +137,9 @@ The `build-runtime` GitHub Actions workflow:
 11. Installs the `.deb` inside the container.
 12. Checks `px4_sitl_runtime_1_14` and `sitl_gazebo_1_14` with `rospack`.
 13. Uploads the `.deb` as a workflow artifact named by Debian architecture.
+14. Publishes to the self-hosted APT repository when these repository secrets
+    are configured: `APT_REPO_HOST`, `APT_REPO_PORT`, `APT_REPO_SSH_KEY`, and
+    `APT_REPO_KNOWN_HOSTS`.
 
-APT publishing is intentionally a later stage. GitHub Pages can host the static Debian repository metadata and `pool/` tree after the build artifact is proven installable.
+If the APT repository secrets are absent, CI still builds and uploads artifacts
+without publishing.
