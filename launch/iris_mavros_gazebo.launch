@@ -2,6 +2,7 @@
 <launch>
   <arg name="ID" default="0"/>
   <arg name="vehicle" default="iris"/>
+  <arg name="px4_sim_model" default="gazebo-classic_$(arg vehicle)"/>
   <arg name="runtime_root" default="$(find px4_sitl_runtime_1_14)/runtime"/>
   <arg name="gazebo_runtime_root" default="$(find sitl_gazebo_1_14)"/>
   <arg name="gazebo_plugin_root" default="/opt/ros/noetic/lib/sitl_gazebo_1_14"/>
@@ -26,7 +27,7 @@
   <arg name="respawn_mavros" default="false"/>
   <arg name="interactive" default="false"/>
 
-  <env name="PX4_SIM_MODEL" value="$(arg vehicle)"/>
+  <env name="PX4_SIM_MODEL" value="$(arg px4_sim_model)"/>
   <env name="GAZEBO_PLUGIN_PATH" value="$(arg gazebo_plugin_root):$(optenv GAZEBO_PLUGIN_PATH)"/>
   <env name="GAZEBO_MODEL_PATH" value="$(arg gazebo_runtime_root)/models:$(optenv GAZEBO_MODEL_PATH)"/>
   <env name="LD_LIBRARY_PATH" value="$(arg gazebo_plugin_root):$(optenv LD_LIBRARY_PATH)"/>
