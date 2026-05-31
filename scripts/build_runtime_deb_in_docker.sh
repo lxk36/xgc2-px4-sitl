@@ -78,6 +78,7 @@ docker run --rm \
       libopencv-dev \
       libprotobuf-dev \
       libssl-dev \
+      libxslt1-dev \
       libxml2-dev \
       libxml2-utils \
       lsb-release \
