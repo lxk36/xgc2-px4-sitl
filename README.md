@@ -138,6 +138,47 @@ scripts/build_deb.sh \
   --output-dir debs
 ```
 
+## Self-Hosted APT Publishing
+
+The `build-runtime` workflow can publish `.deb` artifacts directly to the
+self-hosted XGC2 APT repository over SSH. Publishing is enabled only when these
+repository secrets exist:
+
+```bash
+APT_REPO_HOST
+APT_REPO_PORT
+APT_REPO_SSH_KEY
+APT_REPO_KNOWN_HOSTS
+```
+
+`APT_REPO_HOST` is the SSH publish host. `APT_REPO_PORT` is the container SSH
+publish port. `APT_REPO_SSH_KEY` is the private half of the CI deploy key whose
+public half is installed in the APT server `authorized_keys`.
+`APT_REPO_KNOWN_HOSTS` is the pinned SSH host key line for strict host checking.
+It proves to CI that the SSH endpoint is the expected APT server before any
+package data is sent.
+
+Create `APT_REPO_KNOWN_HOSTS` from the same host and port that CI will use:
+
+```bash
+APT_REPO_HOST=server.example.com
+APT_REPO_PORT=2222
+
+ssh-keyscan -p "$APT_REPO_PORT" "$APT_REPO_HOST" > apt_known_hosts
+cat apt_known_hosts
+```
+
+Paste the full `cat apt_known_hosts` output into the GitHub secret. It looks
+like this:
+
+```text
+[server.example.com]:2222 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...
+```
+
+If `APT_REPO_HOST` is an IP address, generate the line with that IP address. If
+it is a domain name, generate the line with that domain name. Do not use
+`127.0.0.1` unless GitHub Actions will connect to `127.0.0.1`.
+
 ## CI
 
 The `build-runtime` GitHub Actions workflow:
