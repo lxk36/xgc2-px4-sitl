@@ -31,9 +31,15 @@ PX4 v1.16.2 packaging fix -> ros-jazzy-xgc2-px4-sitl-1-16 1.16.2-2
 
 ## User Installation
 
-Once the GitHub Pages APT repository is enabled, install the runtime with:
+Once the self-hosted APT repository is enabled, install the runtime with:
 
 ```bash
+curl -fsSL https://APT_DOMAIN/xgc2-archive-keyring.gpg | \
+  sudo gpg --dearmor -o /usr/share/keyrings/xgc2-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/xgc2-archive-keyring.gpg arch=amd64] https://APT_DOMAIN noble main" | \
+  sudo tee /etc/apt/sources.list.d/xgc2.list
+
 sudo apt update
 sudo apt install ros-jazzy-xgc2-px4-sitl-1-16
 ```
@@ -148,5 +154,9 @@ The `build-runtime` GitHub Actions workflow:
 10. Installs the `.deb` inside the container.
 11. Checks `px4_sitl_runtime_1_16`, `px4_gz_sim_1_16`, and `xgc2_px4_sitl_1_16` with `ros2 pkg prefix`.
 12. Uploads the `.deb` as a workflow artifact named by Debian architecture.
+13. Publishes to the self-hosted APT repository when these repository secrets
+    are configured: `APT_REPO_HOST`, `APT_REPO_PORT`, `APT_REPO_SSH_KEY`, and
+    `APT_REPO_KNOWN_HOSTS`.
 
-APT publishing is intentionally a later stage. GitHub Pages can host the static Debian repository metadata and `pool/` tree after the build artifact is proven installable.
+If the APT repository secrets are absent, CI still builds and uploads artifacts
+without publishing.
