@@ -34,12 +34,11 @@ PX4_DIR="${WORK_DIR}/PX4-Autopilot"
 mkdir -p "${WORK_DIR}"
 
 if [[ ! -d "${PX4_DIR}/.git" ]]; then
-  git clone "${PX4_REPO}" "${PX4_DIR}"
+  git clone "${PX4_REPO}" "${PX4_DIR}" >&2
 fi
 
-git -C "${PX4_DIR}" fetch --tags --prune origin
-git -C "${PX4_DIR}" checkout "${PX4_TAG}"
-git -C "${PX4_DIR}" submodule update --init --recursive
+git -C "${PX4_DIR}" fetch --tags --prune origin >&2
+git -C "${PX4_DIR}" checkout "${PX4_TAG}" >&2
+git -C "${PX4_DIR}" submodule update --init --recursive >&2
 
 echo "${PX4_DIR}"
-
