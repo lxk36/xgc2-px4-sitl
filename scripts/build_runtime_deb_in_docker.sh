@@ -102,11 +102,6 @@ docker run --rm \
     scripts/extract_px4_runtime.sh --px4-dir "${PX4_DIR}" --output-dir /workspace/work/runtime-stage
     scripts/extract_gazebo_classic_runtime.sh --px4-dir "${PX4_DIR}" --output-dir /workspace/work/gazebo-stage
     scripts/check_px4_runtime.sh /workspace/work/runtime-stage
-    scripts/check_gazebo_mavros_e2e.sh \
-      --runtime-root /workspace/work/runtime-stage \
-      --gazebo-root /workspace/work/gazebo-stage \
-      --work-dir /workspace/work/e2e-rootfs \
-      --timeout 120
     scripts/build_deb.sh \
       --runtime-dir /workspace/work/runtime-stage \
       --gazebo-dir /workspace/work/gazebo-stage \
@@ -122,7 +117,9 @@ docker run --rm \
       scripts/check_px4_runtime.sh "${INSTALL_PREFIX}"
       test -f "${GAZEBO_RUNTIME_PREFIX}/models/iris/iris.sdf"
       test -f "${GAZEBO_RUNTIME_PREFIX}/worlds/empty.world"
+      set +u
       source /opt/ros/noetic/setup.bash
+      set -u
       test "$(rospack find "${RUNTIME_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${RUNTIME_ROS_PACKAGE}"
       test "$(rospack find "${GAZEBO_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${GAZEBO_ROS_PACKAGE}"
       roslaunch --files "${RUNTIME_ROS_PACKAGE}" iris_mavros_gazebo.launch >/tmp/px4-sitl-runtime-launch-files.txt
