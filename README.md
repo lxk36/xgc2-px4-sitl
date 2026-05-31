@@ -150,11 +150,20 @@ ssh-keyscan -p "$APT_REPO_PORT" "$APT_REPO_HOST" > apt_known_hosts
 cat apt_known_hosts
 ```
 
-Paste the full `cat apt_known_hosts` output into the GitHub secret. It looks
-like this:
+Paste the full `cat apt_known_hosts` output into the GitHub secret. Copy the
+whole line, including `[host]:port`, `ssh-ed25519`, and the long key value. Do
+not paste only the `AAAAC3...` part.
+
+Correct `APT_REPO_KNOWN_HOSTS` value:
 
 ```text
 [server.example.com]:2222 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...
+```
+
+Wrong value:
+
+```text
+AAAAC3NzaC1lZDI1NTE5AAAA...
 ```
 
 If `APT_REPO_HOST` is an IP address, generate the line with that IP address. If
