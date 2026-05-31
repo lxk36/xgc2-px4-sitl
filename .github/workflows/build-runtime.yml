@@ -1,6 +1,9 @@
 name: build-runtime
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       package_branch:
