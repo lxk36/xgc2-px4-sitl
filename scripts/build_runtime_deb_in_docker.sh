@@ -65,6 +65,7 @@ docker run --rm \
       git \
       gnupg \
       lsb-release \
+      python3 \
       sudo \
       wget
 
@@ -77,14 +78,28 @@ docker run --rm \
 
     scripts/build_px4_runtime.sh --px4-dir "${PX4_DIR}"
     scripts/extract_px4_runtime.sh --px4-dir "${PX4_DIR}" --output-dir /workspace/work/runtime-stage
+    scripts/extract_gz_sim_runtime.sh --px4-dir "${PX4_DIR}" --output-dir /workspace/work/gz-sim-stage
     scripts/check_px4_runtime.sh /workspace/work/runtime-stage
-    scripts/build_deb.sh --runtime-dir /workspace/work/runtime-stage --output-dir /workspace/out
+    scripts/check_gz_sim_runtime.sh /workspace/work/gz-sim-stage
+    scripts/build_deb.sh \
+      --runtime-dir /workspace/work/runtime-stage \
+      --gz-sim-dir /workspace/work/gz-sim-stage \
+      --output-dir /workspace/out
 
     if [[ "${INSTALL_CHECK}" == "true" ]]; then
       apt-get install -y /workspace/out/*.deb
       source scripts/lib/manifest.sh
       INSTALL_PREFIX="$(manifest_value install_prefix)"
+      GZ_SIM_RUNTIME_PREFIX="$(manifest_value gazebo_runtime_prefix)"
+      RUNTIME_ROS_PACKAGE="$(manifest_value runtime_ros_package)"
+      GZ_SIM_ROS_PACKAGE="$(manifest_value gazebo_ros_package)"
+      META_ROS_PACKAGE="$(manifest_value meta_ros_package)"
       scripts/check_px4_runtime.sh "${INSTALL_PREFIX}"
+      scripts/check_gz_sim_runtime.sh "${GZ_SIM_RUNTIME_PREFIX}"
+      source /opt/ros/jazzy/setup.bash
+      test "$(ros2 pkg prefix "${RUNTIME_ROS_PACKAGE}")" = "/opt/ros/jazzy"
+      test "$(ros2 pkg prefix "${GZ_SIM_ROS_PACKAGE}")" = "/opt/ros/jazzy"
+      test "$(ros2 pkg prefix "${META_ROS_PACKAGE}")" = "/opt/ros/jazzy"
     fi
   '
 
