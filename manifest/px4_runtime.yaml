@@ -15,6 +15,6 @@ gazebo_runtime_prefix: /opt/ros/noetic/share/sitl_gazebo_1_14
 gazebo_plugin_prefix: /opt/ros/noetic/lib/sitl_gazebo_1_14
 build_target: px4_sitl_default
 px4_cmake_build_type: RelWithDebInfo
-optimization_level: O2
+optimization_level: O3
 gazebo_build_target: sitl_gazebo-classic
 docker_image: ros:noetic-ros-base-focal

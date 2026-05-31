@@ -11,7 +11,7 @@ PX4_CMAKE_BUILD_TYPE="${PX4_CMAKE_BUILD_TYPE:-$(manifest_value px4_cmake_build_t
 OPTIMIZATION_LEVEL="${OPTIMIZATION_LEVEL:-$(manifest_value optimization_level)}"
 GAZEBO_BUILD_TARGET="$(manifest_value gazebo_build_target)"
 PX4_CMAKE_BUILD_TYPE="${PX4_CMAKE_BUILD_TYPE:-RelWithDebInfo}"
-OPTIMIZATION_LEVEL="${OPTIMIZATION_LEVEL:-O2}"
+OPTIMIZATION_LEVEL="${OPTIMIZATION_LEVEL:-O3}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
