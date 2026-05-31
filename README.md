@@ -1,6 +1,6 @@
 # px4_sitl_runtime
 
-ROS Noetic launch wrapper and CI control package for PX4 SITL runtime Debian packages.
+ROS Jazzy CI control package for PX4 SITL runtime Debian packages.
 
 This repository intentionally does **not** store PX4 binaries, PX4 source trees, Gazebo plugin binaries, or Debian artifacts. Runtime binaries are built in target Ubuntu/ROS environments by CI, packaged as `.deb`, and published to an APT repository.
 
@@ -9,14 +9,13 @@ This repository intentionally does **not** store PX4 binaries, PX4 source trees,
 The Debian package name is stable:
 
 ```bash
-ros-noetic-px4-sitl-runtime
+ros-jazzy-px4-sitl-runtime
 ```
 
 The package version follows the PX4 tag:
 
 ```text
-PX4 v1.16.2 -> ros-noetic-px4-sitl-runtime 1.16.2-1
-PX4 v1.12.3 -> ros-noetic-px4-sitl-runtime 1.12.3-1
+PX4 v1.16.2 -> ros-jazzy-px4-sitl-runtime 1.16.2-1
 ```
 
 The suffix after `-` is the packaging revision. If PX4 stays at `v1.16.2` but packaging changes, publish `1.16.2-2`.
@@ -25,6 +24,7 @@ Branch names identify maintenance lines, for example:
 
 ```text
 v1.16-noetic
+v1.16-jazzy
 v1.12-noetic
 ```
 
@@ -36,7 +36,7 @@ Add the XGC APT key and source list:
 curl -fsSL https://apt.example.com/xgc-archive-keyring.gpg | \
   sudo tee /usr/share/keyrings/xgc-archive-keyring.gpg >/dev/null
 
-echo "deb [signed-by=/usr/share/keyrings/xgc-archive-keyring.gpg] https://apt.example.com focal main" | \
+echo "deb [signed-by=/usr/share/keyrings/xgc-archive-keyring.gpg] https://apt.example.com noble main" | \
   sudo tee /etc/apt/sources.list.d/xgc-sim.list
 ```
 
@@ -44,26 +44,25 @@ Install the runtime packages:
 
 ```bash
 sudo apt update
-sudo apt install ros-noetic-px4-sitl-runtime ros-noetic-sitl-gazebo-classic
+sudo apt install ros-jazzy-px4-sitl-runtime
 ```
 
 Install a specific PX4 runtime version:
 
 ```bash
-sudo apt install ros-noetic-px4-sitl-runtime=1.16.2-1
+sudo apt install ros-jazzy-px4-sitl-runtime=1.16.2-1
 ```
 
 Check available versions:
 
 ```bash
-apt-cache madison ros-noetic-px4-sitl-runtime
+apt-cache madison ros-jazzy-px4-sitl-runtime
 ```
 
-Launch Iris with MAVROS and Gazebo Classic:
+This branch currently packages the PX4 SITL runtime. A ROS 2/Gazebo Sim launch wrapper should be added separately from the old ROS 1/MAVROS/Gazebo Classic launch flow.
 
 ```bash
-source /opt/ros/noetic/setup.bash
-roslaunch px4_sitl_runtime iris_mavros_gazebo.launch
+source /opt/ros/jazzy/setup.bash
 ```
 
 ## Runtime Layout
@@ -82,10 +81,10 @@ The runtime Debian package installs PX4 files under:
     └── extras/
 ```
 
-The Gazebo Classic package should provide models, worlds, and plugins under:
+Gazebo Sim runtime files are expected under:
 
 ```text
-/opt/xgc/sitl_gazebo_classic/1.16.2/
+/opt/xgc/px4_gz_sim/1.16.2/
 ├── lib/
 ├── models/
 └── worlds/
@@ -95,7 +94,7 @@ The launch file uses a writable work directory under `/tmp/px4_sitl_runtime` so 
 
 ## Local Runtime Build
 
-The recommended local path builds inside the official ROS Noetic image:
+The recommended local path builds inside the official ROS Jazzy image:
 
 ```bash
 scripts/build_runtime_deb_in_docker.sh \
@@ -103,7 +102,7 @@ scripts/build_runtime_deb_in_docker.sh \
   --output-dir debs
 ```
 
-This command pulls `osrf/ros:noetic-desktop-full-focal`, clones the configured PX4 tag, initializes PX4 submodules, builds `px4_sitl_default`, extracts the runtime, builds a Debian package, installs that package inside the same disposable container, and checks that the installed PX4 runtime can start.
+This command pulls `osrf/ros:jazzy-desktop-full-noble`, clones the configured PX4 tag, initializes PX4 submodules, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` inside the container, builds `px4_sitl_default`, extracts the runtime, builds a Debian package, installs that package inside the same disposable container, and checks that the installed PX4 runtime can start.
 
 Build and extract a runtime locally:
 
@@ -129,15 +128,16 @@ scripts/build_deb.sh \
 The `build-runtime` GitHub Actions workflow:
 
 1. Reads `manifest/px4_runtime.yaml`.
-2. Pulls `osrf/ros:noetic-desktop-full-focal`.
+2. Pulls `osrf/ros:jazzy-desktop-full-noble`.
 3. Runs the full build inside a disposable Docker container.
 4. Clones PX4-Autopilot at the configured tag and initializes submodules.
-5. Builds `px4_sitl_default`.
-6. Extracts `bin/px4`, `bin/px4-alias.sh`, `bin/px4-*` symlinks, and `etc/`.
-7. Builds a Debian package.
-8. Installs the Debian package inside the container.
-9. Checks that the installed PX4 runtime can start.
-10. Uploads the `.deb` as a workflow artifact.
+5. Runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` for build and simulation dependencies.
+6. Builds `px4_sitl_default`.
+7. Extracts `bin/px4`, `bin/px4-alias.sh`, `bin/px4-*` symlinks, and `etc/`.
+8. Builds a Debian package.
+9. Installs the Debian package inside the container.
+10. Checks that the installed PX4 runtime can start.
+11. Uploads the `.deb` as a workflow artifact.
 
 APT publishing is intentionally not enabled in this workflow yet. The helper script is kept for the later publishing stage:
 

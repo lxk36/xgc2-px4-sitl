@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - v*-noetic
+      - v*-jazzy
   schedule:
     - cron: "17 3 * * 1"
 

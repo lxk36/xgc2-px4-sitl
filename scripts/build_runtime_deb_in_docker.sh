@@ -60,40 +60,19 @@ docker run --rm \
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y --no-install-recommends \
-      bc \
       ca-certificates \
-      ccache \
-      cmake \
-      curl \
       dpkg-dev \
-      file \
-      g++ \
-      gcc \
-      genromfs \
       git \
       gnupg \
-      libssl-dev \
-      libxml2-dev \
-      libxml2-utils \
       lsb-release \
-      make \
-      ninja-build \
-      python3 \
-      python3-dev \
-      python3-pip \
-      python3-setuptools \
-      python3-wheel \
-      rsync \
       sudo \
-      unzip \
-      wget \
-      zip
+      wget
 
     cd /workspace/px4_sitl_runtime
     PX4_DIR="$(scripts/fetch_px4.sh --work-dir /workspace/work)"
 
     if [[ -x "${PX4_DIR}/Tools/setup/ubuntu.sh" ]]; then
-      bash "${PX4_DIR}/Tools/setup/ubuntu.sh" --no-nuttx --no-sim-tools
+      bash "${PX4_DIR}/Tools/setup/ubuntu.sh" --no-nuttx
     fi
 
     scripts/build_px4_runtime.sh --px4-dir "${PX4_DIR}"

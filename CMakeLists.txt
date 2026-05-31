@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(px4_sitl_runtime)
 
-find_package(catkin REQUIRED COMPONENTS roslaunch)
-
-catkin_package()
+find_package(ament_cmake REQUIRED)
 
 install(
   DIRECTORY config launch manifest
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
 
 install(
@@ -21,12 +19,14 @@ install(
     scripts/publish_apt_repo.sh
     scripts/run_px4_sitl.sh
     scripts/setup_runtime_env.sh
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(
   DIRECTORY scripts/lib
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  DESTINATION lib/${PROJECT_NAME}
   FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
   DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )
+
+ament_package()

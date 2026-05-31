@@ -68,8 +68,8 @@ Architecture: ${ARCHITECTURE}
 Installed-Size: ${installed_size}
 Maintainer: lxk <lxk@example.com>
 Depends: libc6, libstdc++6, libgcc-s1 | libgcc1
-Description: PX4 SITL runtime for ROS Noetic
- Minimal PX4 SITL runtime extracted from PX4-Autopilot for Gazebo Classic simulation.
+Description: PX4 SITL runtime for ROS Jazzy
+ Minimal PX4 SITL runtime extracted from PX4-Autopilot for Gazebo Sim simulation.
 EOF
 
 mkdir -p "${OUTPUT_DIR}"
