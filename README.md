@@ -9,7 +9,7 @@ This repository does not store PX4 source trees, PX4 binaries, Gazebo Sim assets
 This branch builds one Debian package:
 
 ```bash
-ros-jazzy-xgc2-px4-sitl-1-16
+ros-jazzy-xgc2-sim-1-16
 ```
 
 That Debian package installs three ROS 2 packages under `/opt/ros/jazzy`:
@@ -17,16 +17,16 @@ That Debian package installs three ROS 2 packages under `/opt/ros/jazzy`:
 ```text
 px4_sitl_runtime_1_16
 px4_gz_sim_1_16
-xgc2_px4_sitl_1_16
+xgc2_sim_1_16
 ```
 
-`px4_sitl_runtime_1_16` contains the extracted PX4 SITL runtime files and helper scripts. `px4_gz_sim_1_16` contains PX4 v1.16 Gazebo Sim Harmonic models, worlds, `server.config`, and the `simulation-gazebo` helper. `xgc2_px4_sitl_1_16` is a meta package that depends on both runtime packages.
+`px4_sitl_runtime_1_16` contains the extracted PX4 SITL runtime files and helper scripts. `px4_gz_sim_1_16` contains PX4 v1.16 Gazebo Sim Harmonic models, worlds, `server.config`, and the `simulation-gazebo` helper. `xgc2_sim_1_16` is a meta package that depends on both runtime packages.
 
 The PX4 maintenance line is encoded in the Debian package name. The Debian `Version` tracks the exact PX4 tag plus a packaging revision:
 
 ```text
-PX4 v1.16.2 -> ros-jazzy-xgc2-px4-sitl-1-16 1.16.2-1
-PX4 v1.16.2 packaging fix -> ros-jazzy-xgc2-px4-sitl-1-16 1.16.2-2
+PX4 v1.16.2 -> ros-jazzy-xgc2-sim-1-16 1.16.2-1
+PX4 v1.16.2 packaging fix -> ros-jazzy-xgc2-sim-1-16 1.16.2-2
 ```
 
 ## User Installation
@@ -41,13 +41,13 @@ echo "deb [signed-by=/usr/share/keyrings/xgc2-archive-keyring.gpg arch=amd64] ht
   sudo tee /etc/apt/sources.list.d/xgc2.list
 
 sudo apt update
-sudo apt install ros-jazzy-xgc2-px4-sitl-1-16
+sudo apt install ros-jazzy-xgc2-sim-1-16
 ```
 
 Check available packaging revisions:
 
 ```bash
-apt-cache madison ros-jazzy-xgc2-px4-sitl-1-16
+apt-cache madison ros-jazzy-xgc2-sim-1-16
 ```
 
 Confirm the ROS 2 packages are discoverable:
@@ -56,7 +56,7 @@ Confirm the ROS 2 packages are discoverable:
 source /opt/ros/jazzy/setup.bash
 ros2 pkg prefix px4_sitl_runtime_1_16
 ros2 pkg prefix px4_gz_sim_1_16
-ros2 pkg prefix xgc2_px4_sitl_1_16
+ros2 pkg prefix xgc2_sim_1_16
 ```
 
 Run the packaged Gazebo Sim helper against the installed model store:
@@ -103,7 +103,7 @@ Gazebo Sim Harmonic runtime:
 Meta package:
 
 ```text
-/opt/ros/jazzy/share/xgc2_px4_sitl_1_16/
+/opt/ros/jazzy/share/xgc2_sim_1_16/
 └── package.xml
 ```
 
@@ -210,9 +210,9 @@ The `build-runtime` GitHub Actions workflow:
 6. Runs PX4's Ubuntu dependency setup when present.
 7. Builds `px4_sitl_default`.
 8. Extracts PX4 runtime files and `Tools/simulation/gz`.
-9. Builds `ros-jazzy-xgc2-px4-sitl-1-16`.
+9. Builds `ros-jazzy-xgc2-px4-sitl-1-16`, `ros-jazzy-xgc2-px4-gz-harmonic-1-16`, and `ros-jazzy-xgc2-sim-1-16`.
 10. Installs the `.deb` inside the container.
-11. Checks `px4_sitl_runtime_1_16`, `px4_gz_sim_1_16`, and `xgc2_px4_sitl_1_16` with `ros2 pkg prefix`.
+11. Checks `px4_sitl_runtime_1_16`, `px4_gz_sim_1_16`, and `xgc2_sim_1_16` with `ros2 pkg prefix`.
 12. Uploads the `.deb` as a workflow artifact named by Debian architecture.
 13. Publishes to the self-hosted APT repository when these repository secrets
     are configured: `APT_REPO_HOST`, `APT_REPO_PORT`, `APT_REPO_SSH_KEY`, and
