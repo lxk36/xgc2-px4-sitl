@@ -94,7 +94,7 @@ scripts/build_runtime_deb_in_docker.sh \
   --output-dir debs
 ```
 
-The script pulls `osrf/ros:noetic-desktop-full-focal`, clones PX4 v1.14.4, initializes PX4 submodules, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` when available, builds `px4_sitl_default` and `sitl_gazebo-classic`, extracts runtime artifacts, runs lightweight runtime checks, builds the Debian package, installs it in the same disposable container, and verifies that both ROS packages are discoverable by `rospack`.
+The script pulls `ros:noetic-ros-base-focal`, clones PX4 v1.14.4, initializes PX4 submodules, installs explicit Gazebo Classic build dependencies, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` when available, builds `px4_sitl_default` and `sitl_gazebo-classic`, extracts runtime artifacts, runs lightweight runtime checks, builds the Debian package, installs it in the same disposable container, and verifies that both ROS packages are discoverable by `rospack`.
 
 For lower-level debugging, run the stages directly:
 
@@ -120,7 +120,7 @@ The `build-runtime` GitHub Actions workflow:
 
 1. Reads `manifest/px4_runtime.yaml`.
 2. Builds in parallel for `amd64` and `arm64` on native GitHub-hosted runners.
-3. Pulls `osrf/ros:noetic-desktop-full-focal`.
+3. Pulls `ros:noetic-ros-base-focal`.
 4. Runs the full build inside a disposable Docker container.
 5. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
 6. Runs PX4's Ubuntu dependency setup when present.
