@@ -95,7 +95,7 @@ docker run --rm \
     PX4_DIR="$(scripts/fetch_px4.sh --work-dir /workspace/work)"
 
     if [[ -x "${PX4_DIR}/Tools/setup/ubuntu.sh" ]]; then
-      bash "${PX4_DIR}/Tools/setup/ubuntu.sh" --no-nuttx --no-sim-tools
+      bash "${PX4_DIR}/Tools/setup/ubuntu.sh" --no-nuttx
     fi
 
     scripts/build_px4_runtime.sh --px4-dir "${PX4_DIR}"
