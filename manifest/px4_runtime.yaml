@@ -9,5 +9,4 @@ architectures:
 install_prefix: /opt/xgc/px4_sitl_runtime/1.16.2
 gazebo_runtime_prefix: /opt/xgc/sitl_gazebo_classic/1.16.2
 build_target: px4_sitl_default
-docker_image: px4io/px4-dev-ros-noetic:latest
-
+docker_image: osrf/ros:noetic-desktop-full-focal

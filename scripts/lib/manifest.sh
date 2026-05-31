@@ -16,9 +16,10 @@ manifest_value() {
   local manifest
   manifest="$(manifest_path)"
 
-  awk -F': *' -v key="${key}" '
-    $1 == key {
-      value = $2
+  awk -v key="${key}" '
+    $0 ~ "^[[:space:]]*" key "[[:space:]]*:" {
+      value = $0
+      sub("^[[:space:]]*" key "[[:space:]]*:[[:space:]]*", "", value)
       gsub(/^["'\'']|["'\'']$/, "", value)
       print value
       exit
@@ -36,4 +37,3 @@ require_manifest_value() {
   fi
   printf '%s\n' "${value}"
 }
-

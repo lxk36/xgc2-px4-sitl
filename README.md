@@ -95,6 +95,16 @@ The launch file uses a writable work directory under `/tmp/px4_sitl_runtime` so 
 
 ## Local Runtime Build
 
+The recommended local path builds inside the official ROS Noetic image:
+
+```bash
+scripts/build_runtime_deb_in_docker.sh \
+  --work-dir /tmp/px4-runtime-work \
+  --output-dir debs
+```
+
+This command pulls `osrf/ros:noetic-desktop-full-focal`, clones the configured PX4 tag, initializes PX4 submodules, builds `px4_sitl_default`, extracts the runtime, builds a Debian package, installs that package inside the same disposable container, and checks that the installed PX4 runtime can start.
+
 Build and extract a runtime locally:
 
 ```bash
@@ -114,19 +124,28 @@ scripts/build_deb.sh \
   --output-dir debs
 ```
 
-## CI and APT Publishing
+## CI
 
 The `build-runtime` GitHub Actions workflow:
 
 1. Reads `manifest/px4_runtime.yaml`.
-2. Clones PX4-Autopilot at the configured tag.
-3. Builds `px4_sitl_default` in a ROS Noetic container.
-4. Extracts `bin/px4`, `bin/px4-alias.sh`, and `etc/`.
-5. Builds a Debian package.
-6. Uploads the `.deb` as a workflow artifact.
-7. Publishes to the APT server when repository secrets are configured.
+2. Pulls `osrf/ros:noetic-desktop-full-focal`.
+3. Runs the full build inside a disposable Docker container.
+4. Clones PX4-Autopilot at the configured tag and initializes submodules.
+5. Builds `px4_sitl_default`.
+6. Extracts `bin/px4`, `bin/px4-alias.sh`, `bin/px4-*` symlinks, and `etc/`.
+7. Builds a Debian package.
+8. Installs the Debian package inside the container.
+9. Checks that the installed PX4 runtime can start.
+10. Uploads the `.deb` as a workflow artifact.
 
-Required publish secrets:
+APT publishing is intentionally not enabled in this workflow yet. The helper script is kept for the later publishing stage:
+
+```bash
+scripts/publish_apt_repo.sh --deb-dir debs
+```
+
+It expects these environment variables:
 
 ```text
 APT_REPO_HOST

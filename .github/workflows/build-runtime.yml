@@ -2,53 +2,24 @@ name: build-runtime
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - v*-noetic
   schedule:
     - cron: "17 3 * * 1"
 
 jobs:
   px4-runtime:
     runs-on: ubuntu-latest
-    container: px4io/px4-dev-ros-noetic:latest
-    env:
-      APT_REPO_HOST: ${{ secrets.APT_REPO_HOST }}
-      APT_REPO_USER: ${{ secrets.APT_REPO_USER }}
-      APT_REPO_PATH: ${{ secrets.APT_REPO_PATH }}
-      APT_GPG_KEY_ID: ${{ secrets.APT_GPG_KEY_ID }}
-      APT_REPO_SSH_KEY: ${{ secrets.APT_REPO_SSH_KEY }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install packaging tools
+      - name: Build and install-check runtime package in Docker
         run: |
-          apt-get update
-          apt-get install -y dpkg-dev rsync openssh-client
-
-      - name: Fetch PX4
-        id: fetch_px4
-        run: |
-          PX4_DIR="$(scripts/fetch_px4.sh --work-dir "$RUNNER_TEMP/px4")"
-          echo "px4_dir=${PX4_DIR}" >> "$GITHUB_OUTPUT"
-
-      - name: Build PX4 SITL runtime
-        run: |
-          scripts/build_px4_runtime.sh --px4-dir "${{ steps.fetch_px4.outputs.px4_dir }}"
-
-      - name: Extract runtime
-        run: |
-          scripts/extract_px4_runtime.sh \
-            --px4-dir "${{ steps.fetch_px4.outputs.px4_dir }}" \
-            --output-dir "$RUNNER_TEMP/px4-runtime"
-
-      - name: Smoke check runtime
-        run: |
-          scripts/check_px4_runtime.sh "$RUNNER_TEMP/px4-runtime"
-
-      - name: Build Debian package
-        run: |
-          scripts/build_deb.sh \
-            --runtime-dir "$RUNNER_TEMP/px4-runtime" \
+          scripts/build_runtime_deb_in_docker.sh \
+            --work-dir "$RUNNER_TEMP/px4-runtime-work" \
             --output-dir "$GITHUB_WORKSPACE/debs"
 
       - name: Upload deb artifact
@@ -56,16 +27,3 @@ jobs:
         with:
           name: px4-sitl-runtime-debs
           path: debs/*.deb
-
-      - name: Configure SSH for APT publish
-        if: ${{ env.APT_REPO_HOST != '' && env.APT_REPO_USER != '' && env.APT_REPO_PATH != '' && env.APT_REPO_SSH_KEY != '' }}
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$APT_REPO_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "$APT_REPO_HOST" >> ~/.ssh/known_hosts
-
-      - name: Publish to APT repository
-        if: ${{ env.APT_REPO_HOST != '' && env.APT_REPO_USER != '' && env.APT_REPO_PATH != '' && env.APT_REPO_SSH_KEY != '' }}
-        run: |
-          scripts/publish_apt_repo.sh --deb-dir "$GITHUB_WORKSPACE/debs"
