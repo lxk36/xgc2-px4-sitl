@@ -7,6 +7,10 @@ source "${SCRIPT_DIR}/lib/manifest.sh"
 
 PX4_DIR="${PX4_DIR:-}"
 BUILD_TARGET="$(require_manifest_value build_target)"
+PX4_CMAKE_BUILD_TYPE="${PX4_CMAKE_BUILD_TYPE:-$(manifest_value px4_cmake_build_type)}"
+OPTIMIZATION_LEVEL="${OPTIMIZATION_LEVEL:-$(manifest_value optimization_level)}"
+PX4_CMAKE_BUILD_TYPE="${PX4_CMAKE_BUILD_TYPE:-RelWithDebInfo}"
+OPTIMIZATION_LEVEL="${OPTIMIZATION_LEVEL:-O2}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -30,5 +34,11 @@ if [[ -z "${PX4_DIR}" || ! -d "${PX4_DIR}" ]]; then
   exit 1
 fi
 
-make -C "${PX4_DIR}" "${BUILD_TARGET}"
+export PX4_CMAKE_BUILD_TYPE
+export CFLAGS="${CFLAGS:-} -${OPTIMIZATION_LEVEL} -DNDEBUG"
+export CXXFLAGS="${CXXFLAGS:-} -${OPTIMIZATION_LEVEL} -DNDEBUG"
 
+echo "PX4 build type: ${PX4_CMAKE_BUILD_TYPE}"
+echo "PX4 optimization level: -${OPTIMIZATION_LEVEL}"
+
+make -C "${PX4_DIR}" "${BUILD_TARGET}"
