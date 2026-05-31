@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="ID" default="0"/>
+  <arg name="vehicle" default="iris"/>
+  <arg name="runtime_root" default="/opt/xgc/px4_sitl_runtime/1.16.2"/>
+  <arg name="gazebo_runtime_root" default="/opt/xgc/sitl_gazebo_classic/1.16.2"/>
+  <arg name="work_dir" default="/tmp/px4_sitl_runtime/$(arg vehicle)_$(arg ID)"/>
+
+  <arg name="x" default="0"/>
+  <arg name="y" default="0"/>
+  <arg name="z" default="0"/>
+  <arg name="R" default="0"/>
+  <arg name="P" default="0"/>
+  <arg name="Y" default="0"/>
+
+  <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/empty.world"/>
+  <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/$(arg vehicle)/$(arg vehicle).sdf"/>
+  <arg name="gui" default="true"/>
+  <arg name="debug" default="false"/>
+  <arg name="verbose" default="false"/>
+  <arg name="paused" default="false"/>
+  <arg name="respawn_gazebo" default="false"/>
+
+  <arg name="fcu_url" default="udp://:14540@localhost:14557"/>
+  <arg name="respawn_mavros" default="false"/>
+  <arg name="interactive" default="false"/>
+
+  <env name="PX4_SIM_MODEL" value="gazebo-classic_$(arg vehicle)"/>
+  <env name="GAZEBO_PLUGIN_PATH" value="$(arg gazebo_runtime_root)/lib:$(optenv GAZEBO_PLUGIN_PATH)"/>
+  <env name="GAZEBO_MODEL_PATH" value="$(arg gazebo_runtime_root)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+  <env name="LD_LIBRARY_PATH" value="$(arg gazebo_runtime_root)/lib:$(optenv LD_LIBRARY_PATH)"/>
+
+  <arg unless="$(arg interactive)" name="px4_command_arg1" value="-d"/>
+  <arg     if="$(arg interactive)" name="px4_command_arg1" value=""/>
+
+  <node name="sitl" pkg="px4_sitl_runtime" type="run_px4_sitl.sh" output="screen" required="true"
+        args="--runtime-root $(arg runtime_root) --work-dir $(arg work_dir) --instance $(arg ID) -- $(arg px4_command_arg1)"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="world_name" value="$(arg world)"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="verbose" value="$(arg verbose)"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="respawn_gazebo" value="$(arg respawn_gazebo)"/>
+  </include>
+
+  <node name="$(anon vehicle_spawn)" pkg="gazebo_ros" type="spawn_model" output="screen"
+        args="-sdf -file $(arg sdf) -model $(arg vehicle) -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
+
+  <include file="$(find mavros)/launch/px4.launch">
+    <arg name="gcs_url" value=""/>
+    <arg name="fcu_url" value="$(arg fcu_url)"/>
+    <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
+  </include>
+</launch>
+

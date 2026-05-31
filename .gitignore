@@ -1,0 +1,12 @@
+build/
+devel/
+install/
+logs/
+*.deb
+*.changes
+*.buildinfo
+*.dsc
+*.tar.*
+.catkin_tools/
+.ros/
+

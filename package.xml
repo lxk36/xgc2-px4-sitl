@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>px4_sitl_runtime</name>
+  <version>1.16.2</version>
+  <description>ROS launch wrapper and CI control package for PX4 SITL runtime packages.</description>
+
+  <maintainer email="lxk@example.com">lxk</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roslaunch</build_depend>
+
+  <exec_depend>bash</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>mavlink_sitl_gazebo</exec_depend>
+  <exec_depend>mavros</exec_depend>
+  <exec_depend>roslaunch</exec_depend>
+
+  <export>
+  </export>
+</package>
+
