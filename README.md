@@ -13,9 +13,9 @@ Each active branch maps to one PX4/ROS/Ubuntu runtime line:
 
 | Branch | PX4 tag | ROS | Ubuntu APT distribution | Gazebo stack | Debian package |
 | --- | --- | --- | --- | --- | --- |
-| `v1.12-noetic` | `v1.12.3` | ROS Noetic | `focal` | Gazebo Classic | `ros-noetic-xgc2-px4-sitl-1-12` |
-| `v1.14-noetic` | `v1.14.4` | ROS Noetic | `focal` | Gazebo Classic | `ros-noetic-xgc2-px4-sitl-1-14` |
-| `v1.16-jazzy` | `v1.16.2` | ROS 2 Jazzy | `noble` | Gazebo Sim Harmonic | `ros-jazzy-xgc2-px4-sitl-1-16` |
+| `v1.12-noetic` | `v1.12.3` | ROS Noetic | `focal` | Gazebo Classic | `ros-noetic-xgc2-sim-1-12` |
+| `v1.14-noetic` | `v1.14.4` | ROS Noetic | `focal` | Gazebo Classic | `ros-noetic-xgc2-sim-1-14` |
+| `v1.16-jazzy` | `v1.16.2` | ROS 2 Jazzy | `noble` | Gazebo Sim Harmonic | `ros-jazzy-xgc2-sim-1-16` |
 
 The package name encodes the PX4 maintenance line. Debian package versions track
 the PX4 tag plus a packaging revision, for example `1.12.3-1` then `1.12.3-2`.
@@ -27,6 +27,7 @@ the PX4 tag plus a packaging revision, for example `1.12.3-1` then `1.12.3-2`.
 ```text
 px4_sitl_runtime_1_12
 sitl_gazebo_1_12
+xgc2_sim_1_12
 ```
 
 `v1.14-noetic` installs:
@@ -34,6 +35,7 @@ sitl_gazebo_1_12
 ```text
 px4_sitl_runtime_1_14
 sitl_gazebo_1_14
+xgc2_sim_1_14
 ```
 
 `v1.16-jazzy` installs:
@@ -41,7 +43,7 @@ sitl_gazebo_1_14
 ```text
 px4_sitl_runtime_1_16
 px4_gz_sim_1_16
-xgc2_px4_sitl_1_16
+xgc2_sim_1_16
 ```
 
 The runtime packages contain PX4 SITL executable files, launch or helper
@@ -154,8 +156,8 @@ echo "deb [signed-by=/usr/share/keyrings/xgc2-archive-keyring.gpg arch=amd64] $A
   sudo tee /etc/apt/sources.list.d/xgc2-px4-sitl.list
 
 sudo apt update
-sudo apt install ros-noetic-xgc2-px4-sitl-1-12
-sudo apt install ros-noetic-xgc2-px4-sitl-1-14
+sudo apt install ros-noetic-xgc2-sim-1-12
+sudo apt install ros-noetic-xgc2-sim-1-14
 ```
 
 For ROS 2 Jazzy / Ubuntu 24.04 `noble`:
@@ -167,15 +169,15 @@ echo "deb [signed-by=/usr/share/keyrings/xgc2-archive-keyring.gpg arch=amd64] $A
   sudo tee /etc/apt/sources.list.d/xgc2-px4-sitl.list
 
 sudo apt update
-sudo apt install ros-jazzy-xgc2-px4-sitl-1-16
+sudo apt install ros-jazzy-xgc2-sim-1-16
 ```
 
 Check available package versions:
 
 ```bash
-apt-cache madison ros-noetic-xgc2-px4-sitl-1-12
-apt-cache madison ros-noetic-xgc2-px4-sitl-1-14
-apt-cache madison ros-jazzy-xgc2-px4-sitl-1-16
+apt-cache madison ros-noetic-xgc2-sim-1-12
+apt-cache madison ros-noetic-xgc2-sim-1-14
+apt-cache madison ros-jazzy-xgc2-sim-1-16
 ```
 
 ## Launch Examples
@@ -200,7 +202,7 @@ PX4 v1.16 / ROS 2 Jazzy:
 source /opt/ros/jazzy/setup.bash
 ros2 pkg prefix px4_sitl_runtime_1_16
 ros2 pkg prefix px4_gz_sim_1_16
-ros2 pkg prefix xgc2_px4_sitl_1_16
+ros2 pkg prefix xgc2_sim_1_16
 ```
 
 Run the packaged Gazebo Sim helper:

@@ -1,4 +1,4 @@
-package_name: ros-noetic-xgc2-px4-sitl-1-12
+package_name: ros-noetic-xgc2-sim-1-12
 debian_version: 1.12.3-1
 px4_repo: https://github.com/PX4/PX4-Autopilot.git
 px4_tag: v1.12.3
@@ -9,6 +9,7 @@ architectures:
   - arm64
 runtime_ros_package: px4_sitl_runtime_1_12
 gazebo_ros_package: sitl_gazebo_1_12
+meta_ros_package: xgc2_sim_1_12
 install_prefix: /opt/ros/noetic/share/px4_sitl_runtime_1_12/runtime
 gazebo_runtime_prefix: /opt/ros/noetic/share/sitl_gazebo_1_12
 gazebo_plugin_prefix: /opt/ros/noetic/lib/sitl_gazebo_1_12
