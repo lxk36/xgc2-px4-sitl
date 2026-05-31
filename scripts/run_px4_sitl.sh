@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-/opt/xgc/px4_sitl_runtime/1.12.3}"
+RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-/opt/ros/noetic/share/px4_sitl_runtime_1_12/runtime}"
 WORK_DIR="${PX4_SITL_WORK_DIR:-/tmp/px4_sitl_runtime/iris_0}"
 INSTANCE="0"
 STARTUP_SCRIPT="etc/init.d-posix/rcS"
