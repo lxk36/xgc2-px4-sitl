@@ -31,8 +31,22 @@ while [[ $# -gt 0 ]]; do
 done
 
 BUILD_DIR="${PX4_DIR}/build/${BUILD_TARGET}"
-GAZEBO_BUILD_DIR="${BUILD_DIR}/build_gazebo"
-GAZEBO_SOURCE_DIR="${PX4_DIR}/Tools/sitl_gazebo"
+
+if [[ -d "${BUILD_DIR}/build_gazebo-classic" ]]; then
+  GAZEBO_BUILD_DIR="${BUILD_DIR}/build_gazebo-classic"
+elif [[ -d "${BUILD_DIR}/build_gazebo" ]]; then
+  GAZEBO_BUILD_DIR="${BUILD_DIR}/build_gazebo"
+else
+  GAZEBO_BUILD_DIR="${BUILD_DIR}/build_gazebo-classic"
+fi
+
+if [[ -d "${PX4_DIR}/Tools/simulation/gazebo-classic/sitl_gazebo-classic" ]]; then
+  GAZEBO_SOURCE_DIR="${PX4_DIR}/Tools/simulation/gazebo-classic/sitl_gazebo-classic"
+elif [[ -d "${PX4_DIR}/Tools/sitl_gazebo" ]]; then
+  GAZEBO_SOURCE_DIR="${PX4_DIR}/Tools/sitl_gazebo"
+else
+  GAZEBO_SOURCE_DIR="${PX4_DIR}/Tools/simulation/gazebo-classic/sitl_gazebo-classic"
+fi
 
 if [[ -z "${OUTPUT_DIR}" || "${OUTPUT_DIR}" == "/" || "${OUTPUT_DIR}" == "/tmp" || "${OUTPUT_DIR}" == "${HOME}" ]]; then
   echo "unsafe --output-dir: ${OUTPUT_DIR}" >&2

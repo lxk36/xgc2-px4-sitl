@@ -1,6 +1,6 @@
 # px4_sitl_runtime
 
-Build rules for the XGC2 PX4 v1.12 SITL Debian package on ROS Noetic.
+Build rules for the XGC2 PX4 v1.14 SITL Debian package on ROS Noetic.
 
 This repository is intentionally small. It does not store PX4 source trees, PX4 binaries, Gazebo plugin binaries, or built `.deb` files. CI clones the configured PX4 tag, builds the SITL runtime and Gazebo Classic plugins in the target Ubuntu/ROS environment, and packages only the runtime artifacts users need.
 
@@ -9,26 +9,26 @@ This repository is intentionally small. It does not store PX4 source trees, PX4 
 This branch builds one Debian package:
 
 ```bash
-ros-noetic-xgc2-px4-sitl-1-12
+ros-noetic-xgc2-px4-sitl-1-14
 ```
 
 That Debian package installs two ROS packages under `/opt/ros/noetic`:
 
 ```text
-px4_sitl_runtime_1_12
-sitl_gazebo_1_12
+px4_sitl_runtime_1_14
+sitl_gazebo_1_14
 ```
 
-`px4_sitl_runtime_1_12` contains the launch wrapper, runtime environment helpers, and extracted PX4 SITL runtime files. `sitl_gazebo_1_12` contains the PX4 Gazebo Classic models, worlds, and plugin libraries from PX4 v1.12.
+`px4_sitl_runtime_1_14` contains the launch wrapper, runtime environment helpers, and extracted PX4 SITL runtime files. `sitl_gazebo_1_14` contains the PX4 Gazebo Classic models, worlds, and plugin libraries from PX4 v1.14.
 
 The PX4 maintenance line is encoded in the Debian package name. The Debian `Version` tracks the exact PX4 tag plus a packaging revision:
 
 ```text
-PX4 v1.12.3 -> ros-noetic-xgc2-px4-sitl-1-12 1.12.3-1
-PX4 v1.12.3 packaging fix -> ros-noetic-xgc2-px4-sitl-1-12 1.12.3-2
+PX4 v1.14.4 -> ros-noetic-xgc2-px4-sitl-1-14 1.14.4-1
+PX4 v1.14.4 packaging fix -> ros-noetic-xgc2-px4-sitl-1-14 1.14.4-2
 ```
 
-Later Ubuntu 20.04 compatible PX4 lines can use separate package names such as `ros-noetic-xgc2-px4-sitl-1-14`. This keeps APT versioning for revisions within the same PX4 line instead of using it to switch major runtime layouts.
+Other Ubuntu 20.04 compatible PX4 lines can use separate package names such as `ros-noetic-xgc2-px4-sitl-1-12`. This keeps APT versioning for revisions within the same PX4 line instead of using it to switch major runtime layouts.
 
 ## User Installation
 
@@ -36,20 +36,20 @@ Once the GitHub Pages APT repository is enabled, install the runtime with:
 
 ```bash
 sudo apt update
-sudo apt install ros-noetic-xgc2-px4-sitl-1-12
+sudo apt install ros-noetic-xgc2-px4-sitl-1-14
 ```
 
 Check available packaging revisions:
 
 ```bash
-apt-cache madison ros-noetic-xgc2-px4-sitl-1-12
+apt-cache madison ros-noetic-xgc2-px4-sitl-1-14
 ```
 
 Launch Iris with MAVROS and Gazebo Classic:
 
 ```bash
 source /opt/ros/noetic/setup.bash
-roslaunch px4_sitl_runtime_1_12 iris_mavros_gazebo.launch vehicle:=iris gui:=true
+roslaunch px4_sitl_runtime_1_14 iris_mavros_gazebo.launch vehicle:=iris gui:=true
 ```
 
 ## Installed Layout
@@ -57,7 +57,7 @@ roslaunch px4_sitl_runtime_1_12 iris_mavros_gazebo.launch vehicle:=iris gui:=tru
 PX4 SITL runtime:
 
 ```text
-/opt/ros/noetic/share/px4_sitl_runtime_1_12/
+/opt/ros/noetic/share/px4_sitl_runtime_1_14/
 ├── config/
 ├── launch/
 ├── package.xml
@@ -73,12 +73,12 @@ PX4 SITL runtime:
 Gazebo Classic runtime:
 
 ```text
-/opt/ros/noetic/share/sitl_gazebo_1_12/
+/opt/ros/noetic/share/sitl_gazebo_1_14/
 ├── models/
 ├── package.xml
 └── worlds/
 
-/opt/ros/noetic/lib/sitl_gazebo_1_12/
+/opt/ros/noetic/lib/sitl_gazebo_1_14/
 └── lib*.so
 ```
 
@@ -94,7 +94,7 @@ scripts/build_runtime_deb_in_docker.sh \
   --output-dir debs
 ```
 
-The script pulls `osrf/ros:noetic-desktop-full-focal`, clones PX4 v1.12.3, initializes PX4 submodules, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` when available, builds `px4_sitl_default` and `sitl_gazebo`, extracts runtime artifacts, runs a headless `gzserver` + PX4 SITL + MAVROS check, builds the Debian package, installs it in the same disposable container, and verifies that both ROS packages are discoverable by `rospack`.
+The script pulls `osrf/ros:noetic-desktop-full-focal`, clones PX4 v1.14.4, initializes PX4 submodules, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` when available, builds `px4_sitl_default` and `sitl_gazebo-classic`, extracts runtime artifacts, runs a headless `gzserver` + PX4 SITL + MAVROS check, builds the Debian package, installs it in the same disposable container, and verifies that both ROS packages are discoverable by `rospack`.
 
 For lower-level debugging, run the stages directly:
 
@@ -125,12 +125,12 @@ The `build-runtime` GitHub Actions workflow:
 3. Runs the full build inside a disposable Docker container.
 4. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
 5. Runs PX4's Ubuntu dependency setup when present.
-6. Builds `px4_sitl_default` and the Gazebo Classic `sitl_gazebo` target.
+6. Builds `px4_sitl_default` and the Gazebo Classic `sitl_gazebo-classic` target.
 7. Extracts PX4 runtime files, Gazebo Classic models, worlds, and plugins.
 8. Runs a headless Gazebo Classic + PX4 SITL + MAVROS end-to-end check.
-9. Builds `ros-noetic-xgc2-px4-sitl-1-12`.
+9. Builds `ros-noetic-xgc2-px4-sitl-1-14`.
 10. Installs the `.deb` inside the container.
-11. Checks `px4_sitl_runtime_1_12` and `sitl_gazebo_1_12` with `rospack`.
+11. Checks `px4_sitl_runtime_1_14` and `sitl_gazebo_1_14` with `rospack`.
 12. Uploads the `.deb` as a workflow artifact.
 
 APT publishing is intentionally a later stage. GitHub Pages can host the static Debian repository metadata and `pool/` tree after the build artifact is proven installable.

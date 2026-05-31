@@ -1,16 +1,16 @@
-package_name: ros-noetic-xgc2-px4-sitl-1-12
-debian_version: 1.12.3-1
+package_name: ros-noetic-xgc2-px4-sitl-1-14
+debian_version: 1.14.4-1
 px4_repo: https://github.com/PX4/PX4-Autopilot.git
-px4_tag: v1.12.3
+px4_tag: v1.14.4
 ros_distro: noetic
 ubuntu_codename: focal
 architectures:
   - amd64
-runtime_ros_package: px4_sitl_runtime_1_12
-gazebo_ros_package: sitl_gazebo_1_12
-install_prefix: /opt/ros/noetic/share/px4_sitl_runtime_1_12/runtime
-gazebo_runtime_prefix: /opt/ros/noetic/share/sitl_gazebo_1_12
-gazebo_plugin_prefix: /opt/ros/noetic/lib/sitl_gazebo_1_12
+runtime_ros_package: px4_sitl_runtime_1_14
+gazebo_ros_package: sitl_gazebo_1_14
+install_prefix: /opt/ros/noetic/share/px4_sitl_runtime_1_14/runtime
+gazebo_runtime_prefix: /opt/ros/noetic/share/sitl_gazebo_1_14
+gazebo_plugin_prefix: /opt/ros/noetic/lib/sitl_gazebo_1_14
 build_target: px4_sitl_default
-gazebo_build_target: sitl_gazebo
+gazebo_build_target: sitl_gazebo-classic
 docker_image: osrf/ros:noetic-desktop-full-focal

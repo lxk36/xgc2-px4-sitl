@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>px4_sitl_runtime</name>
-  <version>1.12.3</version>
+  <version>1.14.4</version>
   <description>ROS launch wrapper and CI control package for PX4 SITL runtime packages.</description>
 
   <maintainer email="lxk@example.com">lxk</maintainer>

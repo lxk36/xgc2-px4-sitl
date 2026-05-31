@@ -84,7 +84,7 @@ cat > "${RUNTIME_SHARE}/package.xml" <<EOF
 <package format="2">
   <name>${RUNTIME_ROS_PACKAGE}</name>
   <version>${UPSTREAM_VERSION}</version>
-  <description>PX4 v1.12 SITL runtime wrapper for ROS Noetic.</description>
+  <description>PX4 v1.14 SITL runtime wrapper for ROS Noetic.</description>
   <maintainer email="lxk@example.com">lxk</maintainer>
   <license>BSD-3-Clause</license>
   <exec_depend>bash</exec_depend>
@@ -105,7 +105,7 @@ if [[ -n "${GAZEBO_DIR}" ]]; then
 <package format="2">
   <name>${GAZEBO_ROS_PACKAGE}</name>
   <version>${UPSTREAM_VERSION}</version>
-  <description>PX4 v1.12 Gazebo Classic models, worlds, and plugins for ROS Noetic.</description>
+  <description>PX4 v1.14 Gazebo Classic models, worlds, and plugins for ROS Noetic.</description>
   <maintainer email="lxk@example.com">lxk</maintainer>
   <license>BSD</license>
   <exec_depend>gazebo_ros</exec_depend>
@@ -146,8 +146,8 @@ Architecture: ${ARCHITECTURE}
 Installed-Size: ${installed_size}
 Maintainer: lxk <lxk@example.com>
 Depends: libc6, libstdc++6, libgcc-s1 | libgcc1, gazebo11, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, ros-noetic-gazebo-ros, ros-noetic-geometry-msgs, ros-noetic-mavlink, ros-noetic-mavros, ros-noetic-mavros-msgs, ros-noetic-roscpp, ros-noetic-sensor-msgs, ros-noetic-std-msgs
-Description: XGC2 PX4 v1.12 SITL suite for ROS Noetic
- Installs two ROS packages, ${RUNTIME_ROS_PACKAGE} and ${GAZEBO_ROS_PACKAGE}, extracted from PX4-Autopilot v1.12 for Gazebo Classic simulation.
+Description: XGC2 PX4 v1.14 SITL suite for ROS Noetic
+ Installs two ROS packages, ${RUNTIME_ROS_PACKAGE} and ${GAZEBO_ROS_PACKAGE}, extracted from PX4-Autopilot v1.14 for Gazebo Classic simulation.
 EOF
 
 mkdir -p "${OUTPUT_DIR}"

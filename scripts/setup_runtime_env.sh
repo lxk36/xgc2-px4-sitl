@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-/opt/ros/noetic/share/px4_sitl_runtime_1_12/runtime}"
-GAZEBO_RUNTIME_ROOT="${SITL_GAZEBO_CLASSIC_ROOT:-/opt/ros/noetic/share/sitl_gazebo_1_12}"
-GAZEBO_PLUGIN_ROOT="${SITL_GAZEBO_CLASSIC_PLUGIN_ROOT:-/opt/ros/noetic/lib/sitl_gazebo_1_12}"
+RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-/opt/ros/noetic/share/px4_sitl_runtime_1_14/runtime}"
+GAZEBO_RUNTIME_ROOT="${SITL_GAZEBO_CLASSIC_ROOT:-/opt/ros/noetic/share/sitl_gazebo_1_14}"
+GAZEBO_PLUGIN_ROOT="${SITL_GAZEBO_CLASSIC_PLUGIN_ROOT:-/opt/ros/noetic/lib/sitl_gazebo_1_14}"
 
 export PX4_SITL_RUNTIME_ROOT="${RUNTIME_ROOT}"
 export SITL_GAZEBO_CLASSIC_ROOT="${GAZEBO_RUNTIME_ROOT}"
