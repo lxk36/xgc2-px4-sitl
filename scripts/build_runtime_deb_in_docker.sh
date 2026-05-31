@@ -60,14 +60,32 @@ docker run --rm \
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y --no-install-recommends \
+      bc \
       ca-certificates \
+      ccache \
+      cmake \
+      curl \
       dpkg-dev \
+      file \
+      g++ \
+      gcc \
+      genromfs \
       git \
       gnupg \
       lsb-release \
+      make \
+      ninja-build \
       python3 \
+      python3-dev \
+      python3-pip \
+      python3-setuptools \
+      python3-wheel \
+      ros-jazzy-ros2pkg \
+      rsync \
       sudo \
-      wget
+      unzip \
+      wget \
+      zip
 
     cd /workspace/px4_sitl_runtime
     PX4_DIR="$(scripts/fetch_px4.sh --work-dir /workspace/work)"

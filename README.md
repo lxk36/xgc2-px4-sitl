@@ -111,7 +111,7 @@ scripts/build_runtime_deb_in_docker.sh \
   --output-dir debs
 ```
 
-The script pulls `osrf/ros:jazzy-desktop-full-noble`, clones PX4 v1.16.2, initializes PX4 submodules, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` when available, builds `px4_sitl_default`, extracts PX4 runtime files and Gazebo Sim Harmonic assets, builds the Debian package, installs it in the same disposable container, and verifies all three ROS 2 packages with `ros2 pkg prefix`.
+The script pulls `ros:jazzy-ros-core-noble`, clones PX4 v1.16.2, initializes PX4 submodules, installs explicit build tooling, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` when available, builds `px4_sitl_default`, extracts PX4 runtime files and Gazebo Sim Harmonic assets, builds the Debian package, installs it in the same disposable container, and verifies all three ROS 2 packages with `ros2 pkg prefix`.
 
 For lower-level debugging, run the stages directly:
 
@@ -138,7 +138,7 @@ The `build-runtime` GitHub Actions workflow:
 
 1. Reads `manifest/px4_runtime.yaml`.
 2. Builds in parallel for `amd64` and `arm64` on native GitHub-hosted runners.
-3. Pulls `osrf/ros:jazzy-desktop-full-noble`.
+3. Pulls `ros:jazzy-ros-core-noble`.
 4. Runs the full build inside a disposable Docker container.
 5. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
 6. Runs PX4's Ubuntu dependency setup when present.

@@ -13,4 +13,4 @@ meta_ros_package: xgc2_px4_sitl_1_16
 install_prefix: /opt/ros/jazzy/share/px4_sitl_runtime_1_16/runtime
 gazebo_runtime_prefix: /opt/ros/jazzy/share/px4_gz_sim_1_16
 build_target: px4_sitl_default
-docker_image: osrf/ros:jazzy-desktop-full-noble
+docker_image: ros:jazzy-ros-core-noble
