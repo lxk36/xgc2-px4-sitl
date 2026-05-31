@@ -119,16 +119,17 @@ scripts/build_deb.sh \
 The `build-runtime` GitHub Actions workflow:
 
 1. Reads `manifest/px4_runtime.yaml`.
-2. Pulls `osrf/ros:noetic-desktop-full-focal`.
-3. Runs the full build inside a disposable Docker container.
-4. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
-5. Runs PX4's Ubuntu dependency setup when present.
-6. Builds `px4_sitl_default` and the Gazebo Classic `sitl_gazebo-classic` target.
-7. Extracts PX4 runtime files, Gazebo Classic models, worlds, and plugins.
-8. Runs lightweight PX4 runtime and package layout checks.
-9. Builds `ros-noetic-xgc2-px4-sitl-1-14`.
-10. Installs the `.deb` inside the container.
-11. Checks `px4_sitl_runtime_1_14` and `sitl_gazebo_1_14` with `rospack`.
-12. Uploads the `.deb` as a workflow artifact.
+2. Builds in parallel for `amd64` and `arm64` on native GitHub-hosted runners.
+3. Pulls `osrf/ros:noetic-desktop-full-focal`.
+4. Runs the full build inside a disposable Docker container.
+5. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
+6. Runs PX4's Ubuntu dependency setup when present.
+7. Builds `px4_sitl_default` and the Gazebo Classic `sitl_gazebo-classic` target.
+8. Extracts PX4 runtime files, Gazebo Classic models, worlds, and plugins.
+9. Runs lightweight PX4 runtime and package layout checks.
+10. Builds `ros-noetic-xgc2-px4-sitl-1-14`.
+11. Installs the `.deb` inside the container.
+12. Checks `px4_sitl_runtime_1_14` and `sitl_gazebo_1_14` with `rospack`.
+13. Uploads the `.deb` as a workflow artifact named by Debian architecture.
 
 APT publishing is intentionally a later stage. GitHub Pages can host the static Debian repository metadata and `pool/` tree after the build artifact is proven installable.

@@ -10,7 +10,16 @@ on:
 
 jobs:
   px4-runtime:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - name: Checkout
@@ -19,11 +28,11 @@ jobs:
       - name: Build and install-check runtime package in Docker
         run: |
           scripts/build_runtime_deb_in_docker.sh \
-            --work-dir "$RUNNER_TEMP/px4-runtime-work" \
+            --work-dir "$RUNNER_TEMP/px4-runtime-work-${{ matrix.arch }}" \
             --output-dir "$GITHUB_WORKSPACE/debs"
 
       - name: Upload deb artifact
         uses: actions/upload-artifact@v4
         with:
-          name: px4-sitl-runtime-debs
+          name: px4-sitl-runtime-debs-${{ matrix.arch }}
           path: debs/*.deb
