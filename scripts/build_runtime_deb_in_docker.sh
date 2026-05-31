@@ -68,24 +68,33 @@ docker run --rm \
       dpkg-dev \
       file \
       g++ \
+      gazebo11 \
       gcc \
       genromfs \
       git \
       gnupg \
+      libeigen3-dev \
+      libgazebo11-dev \
+      libopencv-dev \
+      libprotobuf-dev \
       libssl-dev \
       libxml2-dev \
       libxml2-utils \
       lsb-release \
       make \
       ninja-build \
+      protobuf-compiler \
       python3 \
       python3-dev \
       python3-pip \
       python3-setuptools \
       python3-wheel \
       rsync \
+      ros-noetic-gazebo-ros \
+      ros-noetic-mavlink \
       ros-noetic-mavros \
       ros-noetic-mavros-extras \
+      ros-noetic-rospack \
       sudo \
       unzip \
       wget \

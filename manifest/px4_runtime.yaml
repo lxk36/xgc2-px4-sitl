@@ -14,4 +14,4 @@ gazebo_runtime_prefix: /opt/ros/noetic/share/sitl_gazebo_1_12
 gazebo_plugin_prefix: /opt/ros/noetic/lib/sitl_gazebo_1_12
 build_target: px4_sitl_default
 gazebo_build_target: sitl_gazebo
-docker_image: osrf/ros:noetic-desktop-full-focal
+docker_image: ros:noetic-ros-base-focal
