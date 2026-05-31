@@ -72,6 +72,8 @@ docker run --rm \
       genromfs \
       git \
       gnupg \
+      libxslt1-dev \
+      libxml2-dev \
       lsb-release \
       make \
       ninja-build \
