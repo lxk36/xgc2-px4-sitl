@@ -7,12 +7,11 @@ source "${SCRIPT_DIR}/lib/manifest.sh"
 
 DEB_DIR="${DEB_DIR:-${PWD}/debs}"
 APT_REPO_HOST="${APT_REPO_HOST:-}"
-APT_REPO_USER="${APT_REPO_USER:-}"
-APT_REPO_PATH="${APT_REPO_PATH:-}"
-APT_DISTRIBUTION="${APT_DISTRIBUTION:-$(require_manifest_value ubuntu_codename)}"
-APT_COMPONENT="${APT_COMPONENT:-main}"
-APT_ARCHITECTURE="${APT_ARCHITECTURE:-$(dpkg --print-architecture)}"
-APT_GPG_KEY_ID="${APT_GPG_KEY_ID:-}"
+APT_REPO_PORT="${APT_REPO_PORT:-22}"
+APT_REPO_USER="${APT_REPO_USER:-aptdeploy}"
+APT_REPO_DISTRIBUTION="${APT_REPO_DISTRIBUTION:-$(require_manifest_value ubuntu_codename)}"
+APT_REPO_SSH_KEY="${APT_REPO_SSH_KEY:-}"
+APT_REPO_KNOWN_HOSTS="${APT_REPO_KNOWN_HOSTS:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -27,8 +26,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "${APT_REPO_HOST}" || -z "${APT_REPO_USER}" || -z "${APT_REPO_PATH}" ]]; then
-  echo "APT_REPO_HOST, APT_REPO_USER and APT_REPO_PATH are required" >&2
+if [[ -z "${APT_REPO_HOST}" || -z "${APT_REPO_SSH_KEY}" || -z "${APT_REPO_KNOWN_HOSTS}" ]]; then
+  echo "APT_REPO_HOST, APT_REPO_SSH_KEY and APT_REPO_KNOWN_HOSTS are required" >&2
   exit 1
 fi
 
@@ -37,26 +36,27 @@ if ! compgen -G "${DEB_DIR}/*.deb" >/dev/null; then
   exit 1
 fi
 
-remote="${APT_REPO_USER}@${APT_REPO_HOST}"
-incoming="${APT_REPO_PATH}/incoming"
+tmp_dir="$(mktemp -d)"
+cleanup() {
+  rm -rf "${tmp_dir}"
+}
+trap cleanup EXIT
 
-ssh "${remote}" "mkdir -p '${incoming}' '${APT_REPO_PATH}/pool/${APT_COMPONENT}' '${APT_REPO_PATH}/dists/${APT_DISTRIBUTION}/${APT_COMPONENT}/binary-${APT_ARCHITECTURE}'"
-rsync -av --delete "${DEB_DIR}/"*.deb "${remote}:${incoming}/"
+key_file="${tmp_dir}/apt-repo-key"
+known_hosts_file="${tmp_dir}/known_hosts"
+printf '%s\n' "${APT_REPO_SSH_KEY}" > "${key_file}"
+printf '%s\n' "${APT_REPO_KNOWN_HOSTS}" > "${known_hosts_file}"
+chmod 0600 "${key_file}" "${known_hosts_file}"
 
-ssh "${remote}" "set -e
-  cd '${APT_REPO_PATH}'
-  cp '${incoming}'/*.deb 'pool/${APT_COMPONENT}/'
-  dpkg-scanpackages --arch '${APT_ARCHITECTURE}' 'pool/${APT_COMPONENT}' /dev/null > 'dists/${APT_DISTRIBUTION}/${APT_COMPONENT}/binary-${APT_ARCHITECTURE}/Packages'
-  gzip -kf 'dists/${APT_DISTRIBUTION}/${APT_COMPONENT}/binary-${APT_ARCHITECTURE}/Packages'
-  if ! command -v apt-ftparchive >/dev/null 2>&1; then
-    echo 'apt-ftparchive is required on the APT server' >&2
-    exit 1
-  fi
-  apt-ftparchive release 'dists/${APT_DISTRIBUTION}' > 'dists/${APT_DISTRIBUTION}/Release'
-  if [ -n '${APT_GPG_KEY_ID}' ] && command -v gpg >/dev/null 2>&1; then
-    gpg --batch --yes --local-user '${APT_GPG_KEY_ID}' --clearsign -o 'dists/${APT_DISTRIBUTION}/InRelease' 'dists/${APT_DISTRIBUTION}/Release'
-    gpg --batch --yes --local-user '${APT_GPG_KEY_ID}' -abs -o 'dists/${APT_DISTRIBUTION}/Release.gpg' 'dists/${APT_DISTRIBUTION}/Release'
-  fi
-"
+ssh_args=(
+  -i "${key_file}"
+  -p "${APT_REPO_PORT}"
+  -o IdentitiesOnly=yes
+  -o StrictHostKeyChecking=yes
+  -o "UserKnownHostsFile=${known_hosts_file}"
+)
 
-echo "published ${DEB_DIR}/*.deb to ${remote}:${APT_REPO_PATH}"
+tar -C "${DEB_DIR}" -cf - . |
+  ssh "${ssh_args[@]}" "${APT_REPO_USER}@${APT_REPO_HOST}" "publish ${APT_REPO_DISTRIBUTION}"
+
+echo "published ${DEB_DIR}/*.deb to ${APT_REPO_HOST}:${APT_REPO_PORT} distribution ${APT_REPO_DISTRIBUTION}"

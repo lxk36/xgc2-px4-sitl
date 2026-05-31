@@ -32,11 +32,14 @@ Later Ubuntu 20.04 compatible PX4 lines can use separate package names such as `
 
 ## User Installation
 
-Once the GitHub Pages APT repository is enabled, install the runtime with:
+Once the self-hosted APT repository is enabled, install the runtime with:
 
 ```bash
-echo "deb [trusted=yes arch=amd64] https://lxk36.github.io/px4_sitl_runtime/apt focal main" | \
-  sudo tee /etc/apt/sources.list.d/xgc2-px4-sitl.list
+curl -fsSL https://APT_DOMAIN/xgc2-archive-keyring.gpg | \
+  sudo gpg --dearmor -o /usr/share/keyrings/xgc2-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/xgc2-archive-keyring.gpg arch=amd64] https://APT_DOMAIN focal main" | \
+  sudo tee /etc/apt/sources.list.d/xgc2.list
 
 sudo apt update
 sudo apt install ros-noetic-xgc2-px4-sitl-1-12
@@ -148,32 +151,36 @@ sudo rm -f /etc/apt/sources.list.d/xgc2-px4-sitl-local.list
 sudo apt update
 ```
 
-## GitHub Pages APT Hosting
+## Self-Hosted APT Publishing
 
-GitHub Pages should serve the `gh-pages` branch from the repository root. The published tree is:
+The `build-runtime` workflow can publish `.deb` artifacts directly to the
+self-hosted XGC2 APT repository over SSH. Publishing is enabled only when these
+repository secrets exist:
 
-```text
-index.html
-apt/
-├── dists/
-│   └── focal/main/binary-amd64/
-│       ├── Packages
-│       └── Packages.gz
-└── pool/main/
-    └── ros-noetic-xgc2-px4-sitl-1-12_1.12.3-1_amd64.deb
+```bash
+APT_REPO_HOST
+APT_REPO_PORT
+APT_REPO_SSH_KEY
+APT_REPO_KNOWN_HOSTS
 ```
 
-Publishing is manual for now:
+`APT_REPO_HOST` is the SSH publish host. `APT_REPO_PORT` is the container SSH
+publish port. `APT_REPO_SSH_KEY` is the private half of the CI deploy key whose
+public half is installed in the APT server `authorized_keys`.
+`APT_REPO_KNOWN_HOSTS` is the pinned SSH host key line for strict host checking.
 
-1. Let `build-runtime` finish successfully.
-2. Open the successful run and copy its run id from the URL.
-3. Run the `publish-pages-apt` workflow with:
-   - `run_id`: the successful build-runtime run id
-   - `distribution`: `focal`
-   - `component`: `main`
-   - `architecture`: `amd64`
+Create `APT_REPO_KNOWN_HOSTS` from a trusted network path:
 
-The workflow downloads the architecture-specific `px4-sitl-runtime-debs-<arch>` artifact, updates `apt/` with `dpkg-scanpackages`, and pushes the static tree to `gh-pages`.
+```bash
+ssh-keyscan -p APT_REPO_PORT APT_REPO_HOST
+```
+
+This branch publishes to the distribution configured in
+`manifest/px4_runtime.yaml`:
+
+```text
+focal
+```
 
 ## CI
 
@@ -192,5 +199,8 @@ The `build-runtime` GitHub Actions workflow:
 11. Installs the `.deb` inside the container.
 12. Checks `px4_sitl_runtime_1_12` and `sitl_gazebo_1_12` with `rospack`.
 13. Uploads the `.deb` as a workflow artifact named by Debian architecture.
+14. Publishes to the self-hosted APT repository when the APT repository secrets
+    are configured.
 
-APT publishing is intentionally manual until the package build is stable. GitHub Pages hosts only static files, so users consume it with normal `apt` after the `gh-pages` branch is published.
+If the APT repository secrets are absent, CI still builds and uploads artifacts
+without publishing.
