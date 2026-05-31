@@ -8,15 +8,19 @@ source "${SCRIPT_DIR}/lib/manifest.sh"
 RUNTIME_DIR="${RUNTIME_DIR:-}"
 GAZEBO_DIR="${GAZEBO_DIR:-}"
 OUTPUT_DIR="${OUTPUT_DIR:-${PWD}/debs}"
-PACKAGE_NAME="$(require_manifest_value package_name)"
+META_PACKAGE_NAME="$(require_manifest_value package_name)"
 PACKAGE_VERSION="$(require_manifest_value debian_version)"
 UPSTREAM_VERSION="${PACKAGE_VERSION%%-*}"
 ROS_DISTRO="$(require_manifest_value ros_distro)"
 RUNTIME_ROS_PACKAGE="$(require_manifest_value runtime_ros_package)"
 GAZEBO_ROS_PACKAGE="$(require_manifest_value gazebo_ros_package)"
+META_ROS_PACKAGE="$(require_manifest_value meta_ros_package)"
 INSTALL_PREFIX="$(require_manifest_value install_prefix)"
 GAZEBO_RUNTIME_PREFIX="$(require_manifest_value gazebo_runtime_prefix)"
 GAZEBO_PLUGIN_PREFIX="$(require_manifest_value gazebo_plugin_prefix)"
+PX4_TAG="$(require_manifest_value px4_tag)"
+PX4_LINE="${PX4_TAG#v}"
+PX4_LINE="${PX4_LINE%.*}"
 ARCHITECTURE="${ARCHITECTURE:-$(dpkg --print-architecture)}"
 
 while [[ $# -gt 0 ]]; do
@@ -48,65 +52,120 @@ if [[ -z "${RUNTIME_DIR}" || ! -d "${RUNTIME_DIR}" ]]; then
   echo "--runtime-dir is required and must point to extracted PX4 runtime files" >&2
   exit 1
 fi
+if [[ -z "${GAZEBO_DIR}" || ! -d "${GAZEBO_DIR}" ]]; then
+  echo "--gazebo-dir is required and must point to extracted PX4 Gazebo Classic files" >&2
+  exit 1
+fi
 
 test -x "${RUNTIME_DIR}/bin/px4"
 test -f "${RUNTIME_DIR}/bin/px4-alias.sh"
 test -d "${RUNTIME_DIR}/etc"
-
-if [[ -n "${GAZEBO_DIR}" ]]; then
-  test -d "${GAZEBO_DIR}/lib"
-  test -d "${GAZEBO_DIR}/models"
-  test -d "${GAZEBO_DIR}/worlds"
-  test -f "${GAZEBO_DIR}/models/iris/iris.sdf"
-  test -f "${GAZEBO_DIR}/worlds/empty.world"
-fi
+test -d "${GAZEBO_DIR}/lib"
+test -d "${GAZEBO_DIR}/models"
+test -d "${GAZEBO_DIR}/worlds"
+test -f "${GAZEBO_DIR}/models/iris/iris.sdf"
+test -f "${GAZEBO_DIR}/worlds/empty.world"
 
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "${WORK_DIR}"' EXIT
 
-PKG_ROOT="${WORK_DIR}/${PACKAGE_NAME}_${PACKAGE_VERSION}_${ARCHITECTURE}"
 ROS_PREFIX="/opt/ros/${ROS_DISTRO}"
-RUNTIME_SHARE="${PKG_ROOT}${ROS_PREFIX}/share/${RUNTIME_ROS_PACKAGE}"
-RUNTIME_LIB="${PKG_ROOT}${ROS_PREFIX}/lib/${RUNTIME_ROS_PACKAGE}"
-GAZEBO_SHARE="${PKG_ROOT}${ROS_PREFIX}/share/${GAZEBO_ROS_PACKAGE}"
-GAZEBO_LIB="${PKG_ROOT}${ROS_PREFIX}/lib/${GAZEBO_ROS_PACKAGE}"
+RUNTIME_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-px4-sitl-${PX4_LINE//./-}"
+GAZEBO_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-px4-gazebo-classic-${PX4_LINE//./-}"
 
-mkdir -p "${PKG_ROOT}/DEBIAN"
-mkdir -p "${RUNTIME_SHARE}/runtime" "${RUNTIME_SHARE}/launch" "${RUNTIME_SHARE}/config" "${RUNTIME_LIB}"
-cp -a "${RUNTIME_DIR}/." "${PKG_ROOT}${INSTALL_PREFIX}/"
-install -m 0755 "${SCRIPT_DIR}/run_px4_sitl.sh" "${RUNTIME_LIB}/run_px4_sitl.sh"
-install -m 0755 "${SCRIPT_DIR}/setup_runtime_env.sh" "${RUNTIME_LIB}/setup_runtime_env.sh"
-install -m 0644 "${SCRIPT_DIR}/../launch/iris_mavros_gazebo.launch" "${RUNTIME_SHARE}/launch/iris_mavros_gazebo.launch"
-install -m 0644 "${SCRIPT_DIR}/../config/runtime.env" "${RUNTIME_SHARE}/config/runtime.env"
+build_deb() {
+  local pkg_root="$1"
+  local package_name="$2"
+  local architecture="$3"
+  mkdir -p "${OUTPUT_DIR}"
+  local deb_path="${OUTPUT_DIR}/${package_name}_${PACKAGE_VERSION}_${architecture}.deb"
+  dpkg-deb --root-owner-group --build "${pkg_root}" "${deb_path}" >&2
+  echo "${deb_path}"
+}
 
-cat > "${RUNTIME_SHARE}/package.xml" <<EOF
+write_control() {
+  local pkg_root="$1"
+  local package_name="$2"
+  local architecture="$3"
+  local depends="$4"
+  local description="$5"
+  local details="$6"
+  local installed_size
+  installed_size="$(du -ks "${pkg_root}" | awk '{print $1}')"
+  cat > "${pkg_root}/DEBIAN/control" <<CONTROL
+Package: ${package_name}
+Version: ${PACKAGE_VERSION}
+Section: misc
+Priority: optional
+Architecture: ${architecture}
+Installed-Size: ${installed_size}
+Maintainer: XGC2 <xgc2@example.com>
+Depends: ${depends}
+Description: ${description}
+ ${details}
+CONTROL
+}
+
+runtime_root="${WORK_DIR}/${RUNTIME_DEB_PACKAGE}_${PACKAGE_VERSION}_${ARCHITECTURE}"
+runtime_share="${runtime_root}${ROS_PREFIX}/share/${RUNTIME_ROS_PACKAGE}"
+runtime_lib="${runtime_root}${ROS_PREFIX}/lib/${RUNTIME_ROS_PACKAGE}"
+mkdir -p "${runtime_root}/DEBIAN" "${runtime_share}/runtime" "${runtime_share}/launch" "${runtime_share}/config" "${runtime_lib}"
+cp -a "${RUNTIME_DIR}/." "${runtime_root}${INSTALL_PREFIX}/"
+install -m 0755 "${SCRIPT_DIR}/run_px4_sitl.sh" "${runtime_lib}/run_px4_sitl.sh"
+install -m 0755 "${SCRIPT_DIR}/setup_runtime_env.sh" "${runtime_lib}/setup_runtime_env.sh"
+install -m 0644 "${SCRIPT_DIR}/../launch/iris_mavros_gazebo.launch" "${runtime_share}/launch/iris_mavros_gazebo.launch"
+install -m 0644 "${SCRIPT_DIR}/../config/runtime.env" "${runtime_share}/config/runtime.env"
+
+cat > "${runtime_share}/package.xml" <<EOF_XML
 <?xml version="1.0"?>
 <package format="2">
   <name>${RUNTIME_ROS_PACKAGE}</name>
   <version>${UPSTREAM_VERSION}</version>
-  <description>PX4 v1.14 SITL runtime wrapper for ROS Noetic.</description>
-  <maintainer email="lxk@example.com">lxk</maintainer>
+  <description>PX4 v${PX4_LINE} SITL runtime wrapper for ROS Noetic.</description>
+  <maintainer email="xgc2@example.com">XGC2</maintainer>
   <license>BSD-3-Clause</license>
   <exec_depend>bash</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>mavros</exec_depend>
   <exec_depend>${GAZEBO_ROS_PACKAGE}</exec_depend>
 </package>
-EOF
+EOF_XML
 
-if [[ -n "${GAZEBO_DIR}" ]]; then
-  mkdir -p "${GAZEBO_SHARE}" "${GAZEBO_LIB}"
-  cp -a "${GAZEBO_DIR}/models" "${GAZEBO_SHARE}/models"
-  cp -a "${GAZEBO_DIR}/worlds" "${GAZEBO_SHARE}/worlds"
-  find "${GAZEBO_DIR}/lib" -maxdepth 1 -type f -name '*.so' -exec cp -a {} "${GAZEBO_LIB}/" \;
+cat > "${runtime_root}${INSTALL_PREFIX}/setup.bash" <<EOF_SETUP
+#!/usr/bin/env bash
+export PX4_SITL_RUNTIME_ROOT="${INSTALL_PREFIX}"
+export SITL_GAZEBO_CLASSIC_ROOT="${GAZEBO_RUNTIME_PREFIX}"
+export SITL_GAZEBO_CLASSIC_PLUGIN_ROOT="${GAZEBO_PLUGIN_PREFIX}"
+export PATH="\${PX4_SITL_RUNTIME_ROOT}/bin:\${PATH}"
+export GAZEBO_PLUGIN_PATH="\${SITL_GAZEBO_CLASSIC_PLUGIN_ROOT}:\${GAZEBO_PLUGIN_PATH:-}"
+export GAZEBO_MODEL_PATH="\${SITL_GAZEBO_CLASSIC_ROOT}/models:\${GAZEBO_MODEL_PATH:-}"
+export LD_LIBRARY_PATH="\${SITL_GAZEBO_CLASSIC_PLUGIN_ROOT}:\${LD_LIBRARY_PATH:-}"
+EOF_SETUP
+chmod 0755 "${runtime_root}${INSTALL_PREFIX}/setup.bash"
 
-  cat > "${GAZEBO_SHARE}/package.xml" <<EOF
+write_control \
+  "${runtime_root}" \
+  "${RUNTIME_DEB_PACKAGE}" \
+  "${ARCHITECTURE}" \
+  "libc6, libstdc++6, libgcc-s1 | libgcc1, ${GAZEBO_DEB_PACKAGE} (= ${PACKAGE_VERSION}), ros-noetic-gazebo-ros, ros-noetic-mavros" \
+  "PX4 v${PX4_LINE} SITL runtime wrapper for ROS Noetic" \
+  "Installs the ${RUNTIME_ROS_PACKAGE} ROS package extracted from PX4-Autopilot ${PX4_TAG}."
+
+gazebo_root="${WORK_DIR}/${GAZEBO_DEB_PACKAGE}_${PACKAGE_VERSION}_${ARCHITECTURE}"
+gazebo_share="${gazebo_root}${ROS_PREFIX}/share/${GAZEBO_ROS_PACKAGE}"
+gazebo_lib="${gazebo_root}${ROS_PREFIX}/lib/${GAZEBO_ROS_PACKAGE}"
+mkdir -p "${gazebo_root}/DEBIAN" "${gazebo_share}" "${gazebo_lib}"
+cp -a "${GAZEBO_DIR}/models" "${gazebo_share}/models"
+cp -a "${GAZEBO_DIR}/worlds" "${gazebo_share}/worlds"
+find "${GAZEBO_DIR}/lib" -maxdepth 1 -type f -name '*.so' -exec cp -a {} "${gazebo_lib}/" \;
+
+cat > "${gazebo_share}/package.xml" <<EOF_XML
 <?xml version="1.0"?>
 <package format="2">
   <name>${GAZEBO_ROS_PACKAGE}</name>
   <version>${UPSTREAM_VERSION}</version>
-  <description>PX4 v1.14 Gazebo Classic models, worlds, and plugins for ROS Noetic.</description>
-  <maintainer email="lxk@example.com">lxk</maintainer>
+  <description>PX4 v${PX4_LINE} Gazebo Classic models, worlds, and plugins for ROS Noetic.</description>
+  <maintainer email="xgc2@example.com">XGC2</maintainer>
   <license>BSD</license>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
@@ -120,37 +179,39 @@ if [[ -n "${GAZEBO_DIR}" ]]; then
     <gazebo_ros plugin_path="${GAZEBO_PLUGIN_PREFIX}" gazebo_media_path="\${prefix}" gazebo_model_path="\${prefix}/models"/>
   </export>
 </package>
-EOF
-fi
+EOF_XML
 
-cat > "${PKG_ROOT}${INSTALL_PREFIX}/setup.bash" <<EOF
-#!/usr/bin/env bash
-export PX4_SITL_RUNTIME_ROOT="${INSTALL_PREFIX}"
-export SITL_GAZEBO_CLASSIC_ROOT="${GAZEBO_RUNTIME_PREFIX}"
-export SITL_GAZEBO_CLASSIC_PLUGIN_ROOT="${GAZEBO_PLUGIN_PREFIX}"
-export PATH="\${PX4_SITL_RUNTIME_ROOT}/bin:\${PATH}"
-export GAZEBO_PLUGIN_PATH="\${SITL_GAZEBO_CLASSIC_PLUGIN_ROOT}:\${GAZEBO_PLUGIN_PATH:-}"
-export GAZEBO_MODEL_PATH="\${SITL_GAZEBO_CLASSIC_ROOT}/models:\${GAZEBO_MODEL_PATH:-}"
-export LD_LIBRARY_PATH="\${SITL_GAZEBO_CLASSIC_PLUGIN_ROOT}:\${LD_LIBRARY_PATH:-}"
-EOF
-chmod 0755 "${PKG_ROOT}${INSTALL_PREFIX}/setup.bash"
+write_control \
+  "${gazebo_root}" \
+  "${GAZEBO_DEB_PACKAGE}" \
+  "${ARCHITECTURE}" \
+  "gazebo11, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, ros-noetic-gazebo-ros, ros-noetic-geometry-msgs, ros-noetic-mavlink, ros-noetic-mavros, ros-noetic-mavros-msgs, ros-noetic-roscpp, ros-noetic-sensor-msgs, ros-noetic-std-msgs" \
+  "PX4 v${PX4_LINE} Gazebo Classic assets for ROS Noetic" \
+  "Installs the ${GAZEBO_ROS_PACKAGE} ROS package with PX4 Gazebo Classic models, worlds, and plugins."
 
-installed_size="$(du -ks "${PKG_ROOT}" | awk '{print $1}')"
+meta_root="${WORK_DIR}/${META_PACKAGE_NAME}_${PACKAGE_VERSION}_all"
+meta_share="${meta_root}${ROS_PREFIX}/share/${META_ROS_PACKAGE}"
+mkdir -p "${meta_root}/DEBIAN" "${meta_share}"
+cat > "${meta_share}/package.xml" <<EOF_XML
+<?xml version="1.0"?>
+<package format="2">
+  <name>${META_ROS_PACKAGE}</name>
+  <version>${UPSTREAM_VERSION}</version>
+  <description>Meta package for the XGC2 PX4 v${PX4_LINE} SITL suite on ROS Noetic.</description>
+  <maintainer email="xgc2@example.com">XGC2</maintainer>
+  <license>BSD-3-Clause</license>
+  <exec_depend>${RUNTIME_ROS_PACKAGE}</exec_depend>
+  <exec_depend>${GAZEBO_ROS_PACKAGE}</exec_depend>
+</package>
+EOF_XML
+write_control \
+  "${meta_root}" \
+  "${META_PACKAGE_NAME}" \
+  "all" \
+  "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), ${GAZEBO_DEB_PACKAGE} (= ${PACKAGE_VERSION})" \
+  "XGC2 PX4 v${PX4_LINE} SITL suite for ROS Noetic" \
+  "Depends on the runtime and Gazebo Classic packages for PX4-Autopilot ${PX4_TAG}."
 
-cat > "${PKG_ROOT}/DEBIAN/control" <<EOF
-Package: ${PACKAGE_NAME}
-Version: ${PACKAGE_VERSION}
-Section: misc
-Priority: optional
-Architecture: ${ARCHITECTURE}
-Installed-Size: ${installed_size}
-Maintainer: lxk <lxk@example.com>
-Depends: libc6, libstdc++6, libgcc-s1 | libgcc1, gazebo11, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, ros-noetic-gazebo-ros, ros-noetic-geometry-msgs, ros-noetic-mavlink, ros-noetic-mavros, ros-noetic-mavros-msgs, ros-noetic-roscpp, ros-noetic-sensor-msgs, ros-noetic-std-msgs
-Description: XGC2 PX4 v1.14 SITL suite for ROS Noetic
- Installs two ROS packages, ${RUNTIME_ROS_PACKAGE} and ${GAZEBO_ROS_PACKAGE}, extracted from PX4-Autopilot v1.14 for Gazebo Classic simulation.
-EOF
-
-mkdir -p "${OUTPUT_DIR}"
-DEB_PATH="${OUTPUT_DIR}/${PACKAGE_NAME}_${PACKAGE_VERSION}_${ARCHITECTURE}.deb"
-dpkg-deb --root-owner-group --build "${PKG_ROOT}" "${DEB_PATH}" >&2
-echo "${DEB_PATH}"
+build_deb "${gazebo_root}" "${GAZEBO_DEB_PACKAGE}" "${ARCHITECTURE}"
+build_deb "${runtime_root}" "${RUNTIME_DEB_PACKAGE}" "${ARCHITECTURE}"
+build_deb "${meta_root}" "${META_PACKAGE_NAME}" "all"
