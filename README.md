@@ -137,15 +137,16 @@ scripts/build_deb.sh \
 The `build-runtime` GitHub Actions workflow:
 
 1. Reads `manifest/px4_runtime.yaml`.
-2. Pulls `osrf/ros:jazzy-desktop-full-noble`.
-3. Runs the full build inside a disposable Docker container.
-4. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
-5. Runs PX4's Ubuntu dependency setup when present.
-6. Builds `px4_sitl_default`.
-7. Extracts PX4 runtime files and `Tools/simulation/gz`.
-8. Builds `ros-jazzy-xgc2-px4-sitl-1-16`.
-9. Installs the `.deb` inside the container.
-10. Checks `px4_sitl_runtime_1_16`, `px4_gz_sim_1_16`, and `xgc2_px4_sitl_1_16` with `ros2 pkg prefix`.
-11. Uploads the `.deb` as a workflow artifact.
+2. Builds in parallel for `amd64` and `arm64` on native GitHub-hosted runners.
+3. Pulls `osrf/ros:jazzy-desktop-full-noble`.
+4. Runs the full build inside a disposable Docker container.
+5. Clones PX4-Autopilot at the configured tag and initializes all PX4 submodules.
+6. Runs PX4's Ubuntu dependency setup when present.
+7. Builds `px4_sitl_default`.
+8. Extracts PX4 runtime files and `Tools/simulation/gz`.
+9. Builds `ros-jazzy-xgc2-px4-sitl-1-16`.
+10. Installs the `.deb` inside the container.
+11. Checks `px4_sitl_runtime_1_16`, `px4_gz_sim_1_16`, and `xgc2_px4_sitl_1_16` with `ros2 pkg prefix`.
+12. Uploads the `.deb` as a workflow artifact named by Debian architecture.
 
 APT publishing is intentionally a later stage. GitHub Pages can host the static Debian repository metadata and `pool/` tree after the build artifact is proven installable.

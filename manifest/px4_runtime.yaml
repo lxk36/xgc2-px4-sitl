@@ -6,6 +6,7 @@ ros_distro: jazzy
 ubuntu_codename: noble
 architectures:
   - amd64
+  - arm64
 runtime_ros_package: px4_sitl_runtime_1_16
 gazebo_ros_package: px4_gz_sim_1_16
 meta_ros_package: xgc2_px4_sitl_1_16
