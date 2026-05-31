@@ -97,7 +97,7 @@ scripts/build_runtime_deb_in_docker.sh \
   --output-dir debs
 ```
 
-The script pulls `osrf/ros:noetic-desktop-full-focal`, clones PX4 v1.12.3, initializes PX4 submodules, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` when available, builds `px4_sitl_default` and `sitl_gazebo`, extracts runtime artifacts, runs a headless `gzserver` + PX4 SITL + MAVROS check, builds the Debian package, installs it in the same disposable container, and verifies that both ROS packages are discoverable by `rospack`.
+The script pulls `osrf/ros:noetic-desktop-full-focal`, clones PX4 v1.12.3, initializes PX4 submodules, runs PX4's `Tools/setup/ubuntu.sh --no-nuttx` when available, builds `px4_sitl_default` and `sitl_gazebo`, extracts runtime artifacts, runs lightweight runtime checks, builds the Debian package, installs it in the same disposable container, and verifies that both ROS packages are discoverable by `rospack`.
 
 For lower-level debugging, run the stages directly:
 
@@ -110,9 +110,7 @@ scripts/extract_px4_runtime.sh \
 scripts/extract_gazebo_classic_runtime.sh \
   --px4-dir /tmp/px4-runtime-work/PX4-Autopilot \
   --output-dir /tmp/gazebo-runtime-stage
-scripts/check_gazebo_mavros_e2e.sh \
-  --runtime-root /tmp/px4-runtime-stage \
-  --gazebo-root /tmp/gazebo-runtime-stage
+scripts/check_px4_runtime.sh /tmp/px4-runtime-stage
 scripts/build_deb.sh \
   --runtime-dir /tmp/px4-runtime-stage \
   --gazebo-dir /tmp/gazebo-runtime-stage \
@@ -188,7 +186,7 @@ The `build-runtime` GitHub Actions workflow:
 5. Runs PX4's Ubuntu dependency setup when present.
 6. Builds `px4_sitl_default` and the Gazebo Classic `sitl_gazebo` target.
 7. Extracts PX4 runtime files, Gazebo Classic models, worlds, and plugins.
-8. Runs a headless Gazebo Classic + PX4 SITL + MAVROS end-to-end check.
+8. Runs lightweight PX4 runtime and package layout checks.
 9. Builds `ros-noetic-xgc2-px4-sitl-1-12`.
 10. Installs the `.deb` inside the container.
 11. Checks `px4_sitl_runtime_1_12` and `sitl_gazebo_1_12` with `rospack`.

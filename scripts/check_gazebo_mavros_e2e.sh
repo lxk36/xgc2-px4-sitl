@@ -52,7 +52,9 @@ test -f "${GAZEBO_ROOT}/worlds/empty.world"
 test -f "${GAZEBO_ROOT}/models/${MODEL}/${MODEL}.sdf"
 
 # shellcheck disable=SC1091
+set +u
 source /opt/ros/noetic/setup.bash
+set -u
 
 LOG_DIR="$(mktemp -d)"
 PIDS=()
