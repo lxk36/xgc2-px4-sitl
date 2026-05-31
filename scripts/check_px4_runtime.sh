@@ -28,7 +28,7 @@ trap 'rm -rf "${WORK_DIR}"' EXIT
     cat /tmp/px4-runtime-smoke.log >&2
     exit 1
   fi
-  if grep -Eq "not found|error binding socket|error connecting to socket" /tmp/px4-runtime-smoke.log; then
+  if grep -Eq "No such file|command not found|error binding socket|error connecting to socket" /tmp/px4-runtime-smoke.log; then
     cat /tmp/px4-runtime-smoke.log >&2
     exit 1
   fi
