@@ -7,6 +7,7 @@ source "${SCRIPT_DIR}/lib/manifest.sh"
 
 PX4_DIR="${PX4_DIR:-}"
 BUILD_TARGET="$(require_manifest_value build_target)"
+GAZEBO_BUILD_TARGET="$(manifest_value gazebo_build_target)"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -16,6 +17,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --target)
       BUILD_TARGET="$2"
+      shift 2
+      ;;
+    --gazebo-target)
+      GAZEBO_BUILD_TARGET="$2"
       shift 2
       ;;
     *)
@@ -32,3 +37,6 @@ fi
 
 make -C "${PX4_DIR}" "${BUILD_TARGET}"
 
+if [[ -n "${GAZEBO_BUILD_TARGET}" ]]; then
+  make -C "${PX4_DIR}" "${BUILD_TARGET}" "${GAZEBO_BUILD_TARGET}"
+fi

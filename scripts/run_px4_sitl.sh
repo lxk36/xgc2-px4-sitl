@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-/opt/xgc/px4_sitl_runtime/1.16.2}"
+RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-/opt/xgc/px4_sitl_runtime/1.12.3}"
 WORK_DIR="${PX4_SITL_WORK_DIR:-/tmp/px4_sitl_runtime/iris_0}"
 INSTANCE="0"
 STARTUP_SCRIPT="etc/init.d-posix/rcS"
@@ -56,4 +56,3 @@ cd "${WORK_DIR}"
 export PATH="${RUNTIME_ROOT}/bin:${PATH}"
 
 exec "${PX4_BIN}" "${PX4_ETC}" -s "${STARTUP_SCRIPT}" -i "${INSTANCE}" "${EXTRA_ARGS[@]}"
-

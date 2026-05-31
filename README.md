@@ -19,13 +19,13 @@ PX4 v1.16.2 -> ros-noetic-px4-sitl-runtime 1.16.2-1
 PX4 v1.12.3 -> ros-noetic-px4-sitl-runtime 1.12.3-1
 ```
 
-The suffix after `-` is the packaging revision. If PX4 stays at `v1.16.2` but packaging changes, publish `1.16.2-2`.
+The suffix after `-` is the packaging revision. If PX4 stays at `v1.12.3` but packaging changes, publish `1.12.3-2`.
 
 Branch names identify maintenance lines, for example:
 
 ```text
-v1.16-noetic
 v1.12-noetic
+v1.16-noetic
 ```
 
 ## User Installation
@@ -44,13 +44,13 @@ Install the runtime packages:
 
 ```bash
 sudo apt update
-sudo apt install ros-noetic-px4-sitl-runtime ros-noetic-sitl-gazebo-classic
+sudo apt install ros-noetic-px4-sitl-runtime
 ```
 
 Install a specific PX4 runtime version:
 
 ```bash
-sudo apt install ros-noetic-px4-sitl-runtime=1.16.2-1
+sudo apt install ros-noetic-px4-sitl-runtime=1.12.3-1
 ```
 
 Check available versions:
@@ -71,7 +71,7 @@ roslaunch px4_sitl_runtime iris_mavros_gazebo.launch
 The runtime Debian package installs PX4 files under:
 
 ```text
-/opt/xgc/px4_sitl_runtime/1.16.2/
+/opt/xgc/px4_sitl_runtime/1.12.3/
 ├── bin/
 │   ├── px4
 │   ├── px4-alias.sh
@@ -82,10 +82,10 @@ The runtime Debian package installs PX4 files under:
     └── extras/
 ```
 
-The Gazebo Classic package should provide models, worlds, and plugins under:
+The same Debian package provides Gazebo Classic models, worlds, and plugins under:
 
 ```text
-/opt/xgc/sitl_gazebo_classic/1.16.2/
+/opt/xgc/sitl_gazebo_classic/1.12.3/
 ├── lib/
 ├── models/
 └── worlds/
@@ -103,7 +103,7 @@ scripts/build_runtime_deb_in_docker.sh \
   --output-dir debs
 ```
 
-This command pulls `osrf/ros:noetic-desktop-full-focal`, clones the configured PX4 tag, initializes PX4 submodules, builds `px4_sitl_default`, extracts the runtime, builds a Debian package, installs that package inside the same disposable container, and checks that the installed PX4 runtime can start.
+This command pulls `osrf/ros:noetic-desktop-full-focal`, clones the configured PX4 tag, initializes PX4 submodules, builds `px4_sitl_default` and `sitl_gazebo`, extracts the PX4 and Gazebo Classic runtime files, runs a headless `gzserver` + PX4 SITL + MAVROS end-to-end check, builds a Debian package, installs that package inside the same disposable container, and checks that the installed runtime files are present.
 
 Build and extract a runtime locally:
 
@@ -113,7 +113,13 @@ scripts/build_px4_runtime.sh --px4-dir /tmp/px4-runtime-work/PX4-Autopilot
 scripts/extract_px4_runtime.sh \
   --px4-dir /tmp/px4-runtime-work/PX4-Autopilot \
   --output-dir /tmp/px4-runtime-stage
+scripts/extract_gazebo_classic_runtime.sh \
+  --px4-dir /tmp/px4-runtime-work/PX4-Autopilot \
+  --output-dir /tmp/gazebo-runtime-stage
 scripts/check_px4_runtime.sh /tmp/px4-runtime-stage
+scripts/check_gazebo_mavros_e2e.sh \
+  --runtime-root /tmp/px4-runtime-stage \
+  --gazebo-root /tmp/gazebo-runtime-stage
 ```
 
 Build a Debian package:
@@ -121,6 +127,7 @@ Build a Debian package:
 ```bash
 scripts/build_deb.sh \
   --runtime-dir /tmp/px4-runtime-stage \
+  --gazebo-dir /tmp/gazebo-runtime-stage \
   --output-dir debs
 ```
 
@@ -132,14 +139,16 @@ The `build-runtime` GitHub Actions workflow:
 2. Pulls `osrf/ros:noetic-desktop-full-focal`.
 3. Runs the full build inside a disposable Docker container.
 4. Clones PX4-Autopilot at the configured tag and initializes submodules.
-5. Builds `px4_sitl_default`.
+5. Builds `px4_sitl_default` and `sitl_gazebo`.
 6. Extracts `bin/px4`, `bin/px4-alias.sh`, `bin/px4-*` symlinks, and `etc/`.
-7. Builds a Debian package.
-8. Installs the Debian package inside the container.
-9. Checks that the installed PX4 runtime can start.
-10. Uploads the `.deb` as a workflow artifact.
+7. Extracts Gazebo Classic plugin libraries, Iris model files, and worlds from PX4's `Tools/sitl_gazebo`.
+8. Runs a headless `gzserver` + PX4 SITL + MAVROS end-to-end check.
+9. Builds a Debian package.
+10. Installs the Debian package inside the container.
+11. Checks that the installed PX4 and Gazebo runtime files are present.
+12. Uploads the `.deb` as a workflow artifact.
 
-APT publishing is intentionally not enabled in this workflow yet. The helper script is kept for the later publishing stage:
+APT publishing is intentionally not enabled in this workflow yet. GitHub Pages is a good fit for the next stage: a workflow can download successful `.deb` artifacts, generate Debian repository metadata, commit/publish the static `dists/` and `pool/` tree to a Pages branch, and users can consume it with normal `apt`. The helper script is kept for the later server-backed publishing stage:
 
 ```bash
 scripts/publish_apt_repo.sh --deb-dir debs

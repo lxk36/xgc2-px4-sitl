@@ -84,6 +84,8 @@ docker run --rm \
       python3-setuptools \
       python3-wheel \
       rsync \
+      ros-noetic-mavros \
+      ros-noetic-mavros-extras \
       sudo \
       unzip \
       wget \
@@ -98,14 +100,26 @@ docker run --rm \
 
     scripts/build_px4_runtime.sh --px4-dir "${PX4_DIR}"
     scripts/extract_px4_runtime.sh --px4-dir "${PX4_DIR}" --output-dir /workspace/work/runtime-stage
+    scripts/extract_gazebo_classic_runtime.sh --px4-dir "${PX4_DIR}" --output-dir /workspace/work/gazebo-stage
     scripts/check_px4_runtime.sh /workspace/work/runtime-stage
-    scripts/build_deb.sh --runtime-dir /workspace/work/runtime-stage --output-dir /workspace/out
+    scripts/check_gazebo_mavros_e2e.sh \
+      --runtime-root /workspace/work/runtime-stage \
+      --gazebo-root /workspace/work/gazebo-stage \
+      --work-dir /workspace/work/e2e-rootfs \
+      --timeout 120
+    scripts/build_deb.sh \
+      --runtime-dir /workspace/work/runtime-stage \
+      --gazebo-dir /workspace/work/gazebo-stage \
+      --output-dir /workspace/out
 
     if [[ "${INSTALL_CHECK}" == "true" ]]; then
       apt-get install -y /workspace/out/*.deb
       source scripts/lib/manifest.sh
       INSTALL_PREFIX="$(manifest_value install_prefix)"
+      GAZEBO_RUNTIME_PREFIX="$(manifest_value gazebo_runtime_prefix)"
       scripts/check_px4_runtime.sh "${INSTALL_PREFIX}"
+      test -f "${GAZEBO_RUNTIME_PREFIX}/models/iris/iris.sdf"
+      test -f "${GAZEBO_RUNTIME_PREFIX}/worlds/empty.world"
     fi
   '
 

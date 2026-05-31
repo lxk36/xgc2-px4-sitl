@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-/opt/xgc/px4_sitl_runtime/1.16.2}"
-GAZEBO_RUNTIME_ROOT="${SITL_GAZEBO_CLASSIC_ROOT:-/opt/xgc/sitl_gazebo_classic/1.16.2}"
+RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-/opt/xgc/px4_sitl_runtime/1.12.3}"
+GAZEBO_RUNTIME_ROOT="${SITL_GAZEBO_CLASSIC_ROOT:-/opt/xgc/sitl_gazebo_classic/1.12.3}"
 
 export PX4_SITL_RUNTIME_ROOT="${RUNTIME_ROOT}"
 export SITL_GAZEBO_CLASSIC_ROOT="${GAZEBO_RUNTIME_ROOT}"
@@ -12,4 +12,3 @@ export LD_LIBRARY_PATH="${GAZEBO_RUNTIME_ROOT}/lib:${LD_LIBRARY_PATH:-}"
 
 echo "PX4_SITL_RUNTIME_ROOT=${PX4_SITL_RUNTIME_ROOT}"
 echo "SITL_GAZEBO_CLASSIC_ROOT=${SITL_GAZEBO_CLASSIC_ROOT}"
-

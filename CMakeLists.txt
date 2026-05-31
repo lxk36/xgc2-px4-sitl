@@ -15,7 +15,9 @@ install(
     scripts/build_deb.sh
     scripts/build_px4_runtime.sh
     scripts/build_runtime_deb_in_docker.sh
+    scripts/check_gazebo_mavros_e2e.sh
     scripts/check_px4_runtime.sh
+    scripts/extract_gazebo_classic_runtime.sh
     scripts/extract_px4_runtime.sh
     scripts/fetch_px4.sh
     scripts/publish_apt_repo.sh
