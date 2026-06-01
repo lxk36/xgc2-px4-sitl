@@ -130,6 +130,7 @@ docker run --rm \
       GAZEBO_RUNTIME_PREFIX="$(manifest_value gazebo_runtime_prefix)"
       RUNTIME_ROS_PACKAGE="$(manifest_value runtime_ros_package)"
       GAZEBO_ROS_PACKAGE="$(manifest_value gazebo_ros_package)"
+      META_ROS_PACKAGE="$(manifest_value meta_ros_package)"
       scripts/check_px4_runtime.sh "${INSTALL_PREFIX}"
       test -f "${GAZEBO_RUNTIME_PREFIX}/models/iris/iris.sdf"
       test -f "${GAZEBO_RUNTIME_PREFIX}/worlds/empty.world"
@@ -138,7 +139,8 @@ docker run --rm \
       set -u
       test "$(rospack find "${RUNTIME_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${RUNTIME_ROS_PACKAGE}"
       test "$(rospack find "${GAZEBO_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${GAZEBO_ROS_PACKAGE}"
-      roslaunch --files "${RUNTIME_ROS_PACKAGE}" iris_mavros_gazebo.launch >/tmp/px4-sitl-runtime-launch-files.txt
+      test "$(rospack find "${META_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${META_ROS_PACKAGE}"
+      roslaunch --files "${META_ROS_PACKAGE}" iris_mavros_gazebo.launch >/tmp/px4-sitl-runtime-launch-files.txt
     fi
   '
 

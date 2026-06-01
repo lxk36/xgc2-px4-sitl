@@ -46,10 +46,10 @@ px4_gz_sim_1_16
 xgc2_sim_1_16
 ```
 
-The runtime packages contain PX4 SITL executable files, launch or helper
-wrappers, runtime environment setup scripts, Gazebo models/worlds, and packaged
-Gazebo plugin assets needed to run the selected PX4 line from a normal system
-install.
+The PX4 SITL runtime packages contain only PX4 executable files and helper
+scripts. The Gazebo packages contain models, worlds, and plugin assets. The
+`xgc2_sim_*` meta packages depend on both sides and own combined launch files
+that start PX4, Gazebo, and MAVROS together.
 
 ## CI Build
 
@@ -186,14 +186,14 @@ PX4 v1.12 / ROS Noetic:
 
 ```bash
 source /opt/ros/noetic/setup.bash
-roslaunch px4_sitl_runtime_1_12 iris_mavros_gazebo.launch vehicle:=iris gui:=true
+roslaunch xgc2_sim_1_12 iris_mavros_gazebo.launch vehicle:=iris gui:=true
 ```
 
 PX4 v1.14 / ROS Noetic:
 
 ```bash
 source /opt/ros/noetic/setup.bash
-roslaunch px4_sitl_runtime_1_14 iris_mavros_gazebo.launch vehicle:=iris gui:=true
+roslaunch xgc2_sim_1_14 iris_mavros_gazebo.launch vehicle:=iris gui:=true
 ```
 
 PX4 v1.16 / ROS 2 Jazzy:

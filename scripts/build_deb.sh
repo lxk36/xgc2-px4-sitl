@@ -106,14 +106,51 @@ Description: ${description}
 CONTROL
 }
 
+remove_packaged_path() {
+  local pkg_root="$1"
+  local absolute_path="$2"
+  if [[ "${absolute_path}" != /* ]]; then
+    echo "package cleanup path must be absolute: ${absolute_path}" >&2
+    exit 1
+  fi
+  rm -rf "${pkg_root}${absolute_path}"
+}
+
+package_payload_files() {
+  local pkg_root="$1"
+  find "${pkg_root}" -mindepth 1 \( -type f -o -type l \) ! -path "${pkg_root}/DEBIAN/*" -printf '/%P\n' | sort
+}
+
+assert_no_overlapping_payloads() {
+  local left_name="$1"
+  local left_root="$2"
+  local right_name="$3"
+  local right_root="$4"
+  local left_list
+  local right_list
+  local overlap
+  left_list="$(mktemp)"
+  right_list="$(mktemp)"
+  package_payload_files "${left_root}" > "${left_list}"
+  package_payload_files "${right_root}" > "${right_list}"
+  overlap="$(comm -12 "${left_list}" "${right_list}" || true)"
+  rm -f "${left_list}" "${right_list}"
+  if [[ -n "${overlap}" ]]; then
+    echo "package payload overlap between ${left_name} and ${right_name}:" >&2
+    printf '%s\n' "${overlap}" >&2
+    exit 1
+  fi
+}
+
 runtime_root="${WORK_DIR}/${RUNTIME_DEB_PACKAGE}_${PACKAGE_VERSION}_${ARCHITECTURE}"
 runtime_share="${runtime_root}${ROS_PREFIX}/share/${RUNTIME_ROS_PACKAGE}"
 runtime_lib="${runtime_root}${ROS_PREFIX}/lib/${RUNTIME_ROS_PACKAGE}"
-mkdir -p "${runtime_root}/DEBIAN" "${runtime_share}/runtime" "${runtime_share}/launch" "${runtime_share}/config" "${runtime_lib}"
+mkdir -p "${runtime_root}/DEBIAN" "${runtime_share}/runtime" "${runtime_share}/config" "${runtime_lib}"
 cp -a "${RUNTIME_DIR}/." "${runtime_root}${INSTALL_PREFIX}/"
+remove_packaged_path "${runtime_root}" "${GAZEBO_RUNTIME_PREFIX}"
+remove_packaged_path "${runtime_root}" "${GAZEBO_PLUGIN_PREFIX}"
 install -m 0755 "${SCRIPT_DIR}/run_px4_sitl.sh" "${runtime_lib}/run_px4_sitl.sh"
 install -m 0755 "${SCRIPT_DIR}/setup_runtime_env.sh" "${runtime_lib}/setup_runtime_env.sh"
-install -m 0644 "${SCRIPT_DIR}/../launch/iris_mavros_gazebo.launch" "${runtime_share}/launch/iris_mavros_gazebo.launch"
 install -m 0644 "${SCRIPT_DIR}/../config/runtime.env" "${runtime_share}/config/runtime.env"
 
 cat > "${runtime_share}/package.xml" <<EOF_XML
@@ -125,21 +162,13 @@ cat > "${runtime_share}/package.xml" <<EOF_XML
   <maintainer email="xgc2@example.com">XGC2</maintainer>
   <license>BSD-3-Clause</license>
   <exec_depend>bash</exec_depend>
-  <exec_depend>gazebo_ros</exec_depend>
-  <exec_depend>mavros</exec_depend>
-  <exec_depend>${GAZEBO_ROS_PACKAGE}</exec_depend>
 </package>
 EOF_XML
 
 cat > "${runtime_root}${INSTALL_PREFIX}/setup.bash" <<EOF_SETUP
 #!/usr/bin/env bash
 export PX4_SITL_RUNTIME_ROOT="${INSTALL_PREFIX}"
-export SITL_GAZEBO_CLASSIC_ROOT="${GAZEBO_RUNTIME_PREFIX}"
-export SITL_GAZEBO_CLASSIC_PLUGIN_ROOT="${GAZEBO_PLUGIN_PREFIX}"
 export PATH="\${PX4_SITL_RUNTIME_ROOT}/bin:\${PATH}"
-export GAZEBO_PLUGIN_PATH="\${SITL_GAZEBO_CLASSIC_PLUGIN_ROOT}:\${GAZEBO_PLUGIN_PATH:-}"
-export GAZEBO_MODEL_PATH="\${SITL_GAZEBO_CLASSIC_ROOT}/models:\${GAZEBO_MODEL_PATH:-}"
-export LD_LIBRARY_PATH="\${SITL_GAZEBO_CLASSIC_PLUGIN_ROOT}:\${LD_LIBRARY_PATH:-}"
 EOF_SETUP
 chmod 0755 "${runtime_root}${INSTALL_PREFIX}/setup.bash"
 
@@ -147,7 +176,7 @@ write_control \
   "${runtime_root}" \
   "${RUNTIME_DEB_PACKAGE}" \
   "${ARCHITECTURE}" \
-  "libc6, libstdc++6, libgcc-s1 | libgcc1, ${GAZEBO_DEB_PACKAGE} (= ${PACKAGE_VERSION}), ros-noetic-gazebo-ros, ros-noetic-mavros" \
+  "libc6, libstdc++6, libgcc-s1 | libgcc1" \
   "PX4 v${PX4_LINE} SITL runtime wrapper for ROS Noetic" \
   "Installs the ${RUNTIME_ROS_PACKAGE} ROS package extracted from PX4-Autopilot ${PX4_TAG}."
 
@@ -191,7 +220,8 @@ write_control \
 
 meta_root="${WORK_DIR}/${META_PACKAGE_NAME}_${PACKAGE_VERSION}_all"
 meta_share="${meta_root}${ROS_PREFIX}/share/${META_ROS_PACKAGE}"
-mkdir -p "${meta_root}/DEBIAN" "${meta_share}"
+mkdir -p "${meta_root}/DEBIAN" "${meta_share}/launch"
+install -m 0644 "${SCRIPT_DIR}/../launch/iris_mavros_gazebo.launch" "${meta_share}/launch/iris_mavros_gazebo.launch"
 cat > "${meta_share}/package.xml" <<EOF_XML
 <?xml version="1.0"?>
 <package format="2">
@@ -211,6 +241,10 @@ write_control \
   "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), ${GAZEBO_DEB_PACKAGE} (= ${PACKAGE_VERSION})" \
   "XGC2 PX4 v${PX4_LINE} SITL suite for ROS Noetic" \
   "Depends on the runtime and Gazebo Classic packages for PX4-Autopilot ${PX4_TAG}."
+
+assert_no_overlapping_payloads "${RUNTIME_DEB_PACKAGE}" "${runtime_root}" "${GAZEBO_DEB_PACKAGE}" "${gazebo_root}"
+assert_no_overlapping_payloads "${RUNTIME_DEB_PACKAGE}" "${runtime_root}" "${META_PACKAGE_NAME}" "${meta_root}"
+assert_no_overlapping_payloads "${GAZEBO_DEB_PACKAGE}" "${gazebo_root}" "${META_PACKAGE_NAME}" "${meta_root}"
 
 build_deb "${gazebo_root}" "${GAZEBO_DEB_PACKAGE}" "${ARCHITECTURE}"
 build_deb "${runtime_root}" "${RUNTIME_DEB_PACKAGE}" "${ARCHITECTURE}"
