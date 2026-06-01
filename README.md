@@ -6,13 +6,13 @@ This repository is intentionally small. It does not store PX4 source trees, PX4 
 
 ## Package Model
 
-This branch builds one Debian package:
+This branch publishes one user-facing meta Debian package:
 
 ```bash
 ros-noetic-xgc2-sim-1-14
 ```
 
-That Debian package installs two runtime ROS packages plus a meta ROS package under `/opt/ros/noetic`:
+The build emits split runtime Debian packages plus that meta package. Installing `ros-noetic-xgc2-sim-1-14` installs these ROS packages under `/opt/ros/noetic`:
 
 ```text
 px4_sitl_runtime_1_14
@@ -20,7 +20,7 @@ sitl_gazebo_1_14
 xgc2_sim_1_14
 ```
 
-`px4_sitl_runtime_1_14` contains the launch wrapper, runtime environment helpers, and extracted PX4 SITL runtime files. `sitl_gazebo_1_14` contains the PX4 Gazebo Classic models, worlds, and plugin libraries from PX4 v1.14.
+`px4_sitl_runtime_1_14` contains PX4 SITL runtime files and helper scripts. `sitl_gazebo_1_14` contains the PX4 Gazebo Classic models, worlds, and plugin libraries from PX4 v1.14. `xgc2_sim_1_14` is the meta package and owns the combined MAVROS/Gazebo launch file.
 
 The PX4 maintenance line is encoded in the Debian package name. The Debian `Version` tracks the exact PX4 tag plus a packaging revision:
 
@@ -56,7 +56,7 @@ Launch Iris with MAVROS and Gazebo Classic:
 
 ```bash
 source /opt/ros/noetic/setup.bash
-roslaunch px4_sitl_runtime_1_14 iris_mavros_gazebo.launch vehicle:=iris gui:=true
+roslaunch xgc2_sim_1_14 iris_mavros_gazebo.launch vehicle:=iris gui:=true
 ```
 
 ## Installed Layout
@@ -66,7 +66,6 @@ PX4 SITL runtime:
 ```text
 /opt/ros/noetic/share/px4_sitl_runtime_1_14/
 ├── config/
-├── launch/
 ├── package.xml
 └── runtime/
     ├── bin/
@@ -87,6 +86,10 @@ Gazebo Classic runtime:
 
 /opt/ros/noetic/lib/sitl_gazebo_1_14/
 └── lib*.so
+
+/opt/ros/noetic/share/xgc2_sim_1_14/
+├── launch/
+└── package.xml
 ```
 
 The launch file uses `/tmp/px4_sitl_runtime` as the writable rootfs so generated PX4 files such as `parameters.bson`, `dataman`, and logs do not pollute installed files.
