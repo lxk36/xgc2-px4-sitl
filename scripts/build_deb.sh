@@ -112,11 +112,48 @@ install_ament_package_marker() {
   : > "${pkg_root}${AMENT_INDEX_ROOT}/${package_name}"
 }
 
+remove_packaged_path() {
+  local pkg_root="$1"
+  local absolute_path="$2"
+  if [[ "${absolute_path}" != /* ]]; then
+    echo "package cleanup path must be absolute: ${absolute_path}" >&2
+    exit 1
+  fi
+  rm -rf "${pkg_root}${absolute_path}"
+}
+
+package_payload_files() {
+  local pkg_root="$1"
+  find "${pkg_root}" -mindepth 1 \( -type f -o -type l \) ! -path "${pkg_root}/DEBIAN/*" -printf '/%P\n' | sort
+}
+
+assert_no_overlapping_payloads() {
+  local left_name="$1"
+  local left_root="$2"
+  local right_name="$3"
+  local right_root="$4"
+  local left_list
+  local right_list
+  local overlap
+  left_list="$(mktemp)"
+  right_list="$(mktemp)"
+  package_payload_files "${left_root}" > "${left_list}"
+  package_payload_files "${right_root}" > "${right_list}"
+  overlap="$(comm -12 "${left_list}" "${right_list}" || true)"
+  rm -f "${left_list}" "${right_list}"
+  if [[ -n "${overlap}" ]]; then
+    echo "package payload overlap between ${left_name} and ${right_name}:" >&2
+    printf '%s\n' "${overlap}" >&2
+    exit 1
+  fi
+}
+
 runtime_root="${WORK_DIR}/${RUNTIME_DEB_PACKAGE}_${PACKAGE_VERSION}_${ARCHITECTURE}"
 runtime_share="${runtime_root}${ROS_PREFIX}/share/${RUNTIME_ROS_PACKAGE}"
 runtime_lib="${runtime_root}${ROS_PREFIX}/lib/${RUNTIME_ROS_PACKAGE}"
 mkdir -p "${runtime_root}/DEBIAN" "${runtime_share}/runtime" "${runtime_share}/config" "${runtime_lib}"
 cp -a "${RUNTIME_DIR}/." "${runtime_root}${INSTALL_PREFIX}/"
+remove_packaged_path "${runtime_root}" "${GZ_SIM_RUNTIME_PREFIX}"
 install -m 0755 "${SCRIPT_DIR}/run_px4_sitl.sh" "${runtime_lib}/run_px4_sitl.sh"
 install -m 0755 "${SCRIPT_DIR}/setup_runtime_env.sh" "${runtime_lib}/setup_runtime_env.sh"
 install -m 0644 "${SCRIPT_DIR}/../config/runtime.env" "${runtime_share}/config/runtime.env"
@@ -131,7 +168,6 @@ cat > "${runtime_share}/package.xml" <<EOF_XML
   <maintainer email="xgc2@example.com">XGC2</maintainer>
   <license>BSD-3-Clause</license>
   <exec_depend>bash</exec_depend>
-  <exec_depend>${GZ_SIM_ROS_PACKAGE}</exec_depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>
@@ -141,11 +177,7 @@ EOF_XML
 cat > "${runtime_root}${INSTALL_PREFIX}/setup.bash" <<EOF_SETUP
 #!/usr/bin/env bash
 export PX4_SITL_RUNTIME_ROOT="${INSTALL_PREFIX}"
-export PX4_GZ_SIM_ROOT="${GZ_SIM_RUNTIME_PREFIX}"
-export PX4_GZ_SIM_BIN="${ROS_PREFIX}/lib/${GZ_SIM_ROS_PACKAGE}"
-export PATH="\${PX4_SITL_RUNTIME_ROOT}/bin:\${PX4_GZ_SIM_BIN}:\${PATH}"
-export GZ_SIM_RESOURCE_PATH="\${PX4_GZ_SIM_ROOT}/models:\${GZ_SIM_RESOURCE_PATH:-}"
-export GZ_SIM_SERVER_CONFIG_PATH="\${PX4_GZ_SIM_ROOT}/server.config"
+export PATH="\${PX4_SITL_RUNTIME_ROOT}/bin:\${PATH}"
 EOF_SETUP
 chmod 0755 "${runtime_root}${INSTALL_PREFIX}/setup.bash"
 
@@ -153,7 +185,7 @@ write_control \
   "${runtime_root}" \
   "${RUNTIME_DEB_PACKAGE}" \
   "${ARCHITECTURE}" \
-  "libc6, libstdc++6, libgcc-s1 | libgcc1, python3, ${GZ_SIM_DEB_PACKAGE} (= ${PACKAGE_VERSION}), ros-jazzy-ros-environment" \
+  "libc6, libstdc++6, libgcc-s1 | libgcc1, python3, ros-jazzy-ros-environment" \
   "PX4 v${PX4_LINE} SITL runtime wrapper for ROS Jazzy" \
   "Installs the ${RUNTIME_ROS_PACKAGE} ROS 2 package extracted from PX4-Autopilot ${PX4_TAG}."
 
@@ -238,6 +270,10 @@ write_control \
   "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), ${GZ_SIM_DEB_PACKAGE} (= ${PACKAGE_VERSION})" \
   "XGC2 PX4 v${PX4_LINE} SITL suite for ROS Jazzy" \
   "Depends on the runtime and Gazebo Sim packages for PX4-Autopilot ${PX4_TAG}."
+
+assert_no_overlapping_payloads "${RUNTIME_DEB_PACKAGE}" "${runtime_root}" "${GZ_SIM_DEB_PACKAGE}" "${gz_root}"
+assert_no_overlapping_payloads "${RUNTIME_DEB_PACKAGE}" "${runtime_root}" "${META_PACKAGE_NAME}" "${meta_root}"
+assert_no_overlapping_payloads "${GZ_SIM_DEB_PACKAGE}" "${gz_root}" "${META_PACKAGE_NAME}" "${meta_root}"
 
 build_deb "${gz_root}" "${GZ_SIM_DEB_PACKAGE}" "${ARCHITECTURE}"
 build_deb "${runtime_root}" "${RUNTIME_DEB_PACKAGE}" "${ARCHITECTURE}"
