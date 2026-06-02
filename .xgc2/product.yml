@@ -19,6 +19,9 @@ apt:
     - ros-jazzy-xgc2-sim-1-16
     - ros-jazzy-xgc2-px4-sitl-1-16
     - ros-jazzy-xgc2-px4-gz-harmonic-1-16
+  depends:
+    - ros-jazzy-xgc2-px4-sitl-1-16
+    - ros-jazzy-xgc2-px4-gz-harmonic-1-16
 
 usage:
   install: |
