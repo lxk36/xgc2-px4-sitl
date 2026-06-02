@@ -1,0 +1,38 @@
+schema: xgc2.product.v1
+id: xgc2-px4-sitl-116
+name: XGC2 PX4 SITL 1.16
+kind: ros2-apt
+summary: PX4 v1.16 SITL runtime and Gazebo Sim Harmonic assets for ROS Jazzy.
+
+ros:
+  distro: jazzy
+  packages:
+    - px4_sitl_runtime_1_16
+    - px4_gz_sim_1_16
+    - xgc2_sim_1_16
+
+apt:
+  distribution: noble
+  install:
+    - ros-jazzy-xgc2-sim-1-16
+  packages:
+    - ros-jazzy-xgc2-sim-1-16
+    - ros-jazzy-xgc2-px4-sitl-1-16
+    - ros-jazzy-xgc2-px4-gz-harmonic-1-16
+
+usage:
+  install: |
+    sudo apt update
+    sudo apt install ros-jazzy-xgc2-sim-1-16
+  smoke_test: |
+    ros2 pkg prefix xgc2_sim_1_16
+  notes: |
+    Runtime entry scripts are installed from package scripts; packaging scripts stay under .xgc2/scripts.
+
+ownership:
+  paths:
+    - /opt/ros/jazzy/share/px4_sitl_runtime_1_16
+    - /opt/ros/jazzy/share/px4_gz_sim_1_16
+    - /opt/ros/jazzy/share/xgc2_sim_1_16
+    - /opt/ros/jazzy/lib/px4_sitl_runtime_1_16
+    - /opt/ros/jazzy/lib/px4_gz_sim_1_16

@@ -112,7 +112,7 @@ Meta package:
 The normal local path builds inside the official ROS Jazzy image:
 
 ```bash
-scripts/build_runtime_deb_in_docker.sh \
+.xgc2/scripts/build_runtime_deb_in_docker.sh \
   --work-dir /tmp/px4-runtime-work \
   --output-dir debs
 ```
@@ -122,17 +122,17 @@ The script pulls `ros:jazzy-ros-core-noble`, clones PX4 v1.16.2, initializes PX4
 For lower-level debugging, run the stages directly:
 
 ```bash
-scripts/fetch_px4.sh --work-dir /tmp/px4-runtime-work
-scripts/build_px4_runtime.sh --px4-dir /tmp/px4-runtime-work/PX4-Autopilot
-scripts/extract_px4_runtime.sh \
+.xgc2/scripts/fetch_px4.sh --work-dir /tmp/px4-runtime-work
+.xgc2/scripts/build_px4_runtime.sh --px4-dir /tmp/px4-runtime-work/PX4-Autopilot
+.xgc2/scripts/extract_px4_runtime.sh \
   --px4-dir /tmp/px4-runtime-work/PX4-Autopilot \
   --output-dir /tmp/px4-runtime-stage
-scripts/extract_gz_sim_runtime.sh \
+.xgc2/scripts/extract_gz_sim_runtime.sh \
   --px4-dir /tmp/px4-runtime-work/PX4-Autopilot \
   --output-dir /tmp/gz-sim-runtime-stage
-scripts/check_px4_runtime.sh /tmp/px4-runtime-stage
-scripts/check_gz_sim_runtime.sh /tmp/gz-sim-runtime-stage
-scripts/build_deb.sh \
+.xgc2/scripts/check_px4_runtime.sh /tmp/px4-runtime-stage
+.xgc2/scripts/check_gz_sim_runtime.sh /tmp/gz-sim-runtime-stage
+.xgc2/scripts/build_deb.sh \
   --runtime-dir /tmp/px4-runtime-stage \
   --gz-sim-dir /tmp/gz-sim-runtime-stage \
   --output-dir debs

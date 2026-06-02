@@ -2,8 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=scripts/lib/manifest.sh
+# shellcheck source=.xgc2/scripts/lib/manifest.sh
 source "${SCRIPT_DIR}/lib/manifest.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 RUNTIME_DIR="${RUNTIME_DIR:-}"
 GZ_SIM_DIR="${GZ_SIM_DIR:-}"
@@ -154,9 +155,9 @@ runtime_lib="${runtime_root}${ROS_PREFIX}/lib/${RUNTIME_ROS_PACKAGE}"
 mkdir -p "${runtime_root}/DEBIAN" "${runtime_share}/runtime" "${runtime_share}/config" "${runtime_lib}"
 cp -a "${RUNTIME_DIR}/." "${runtime_root}${INSTALL_PREFIX}/"
 remove_packaged_path "${runtime_root}" "${GZ_SIM_RUNTIME_PREFIX}"
-install -m 0755 "${SCRIPT_DIR}/run_px4_sitl.sh" "${runtime_lib}/run_px4_sitl.sh"
-install -m 0755 "${SCRIPT_DIR}/setup_runtime_env.sh" "${runtime_lib}/setup_runtime_env.sh"
-install -m 0644 "${SCRIPT_DIR}/../config/runtime.env" "${runtime_share}/config/runtime.env"
+install -m 0755 "${REPO_ROOT}/scripts/run_px4_sitl.sh" "${runtime_lib}/run_px4_sitl.sh"
+install -m 0755 "${REPO_ROOT}/scripts/setup_runtime_env.sh" "${runtime_lib}/setup_runtime_env.sh"
+install -m 0644 "${REPO_ROOT}/config/runtime.env" "${runtime_share}/config/runtime.env"
 install_ament_package_marker "${runtime_root}" "${RUNTIME_ROS_PACKAGE}"
 
 cat > "${runtime_share}/package.xml" <<EOF_XML

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=scripts/lib/manifest.sh
+# shellcheck source=.xgc2/scripts/lib/manifest.sh
 source "${SCRIPT_DIR}/lib/manifest.sh"
 
 WORK_DIR="${PX4_FETCH_WORK_DIR:-${PWD}/.work}"
