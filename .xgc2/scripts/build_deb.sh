@@ -9,13 +9,11 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 RUNTIME_DIR="${RUNTIME_DIR:-}"
 GZ_SIM_DIR="${GZ_SIM_DIR:-}"
 OUTPUT_DIR="${OUTPUT_DIR:-${PWD}/debs}"
-META_PACKAGE_NAME="$(require_manifest_value package_name)"
 PACKAGE_VERSION="$(require_manifest_value debian_version)"
 UPSTREAM_VERSION="${PACKAGE_VERSION%%-*}"
 ROS_DISTRO="$(require_manifest_value ros_distro)"
 RUNTIME_ROS_PACKAGE="$(require_manifest_value runtime_ros_package)"
 GZ_SIM_ROS_PACKAGE="$(require_manifest_value gazebo_ros_package)"
-META_ROS_PACKAGE="$(require_manifest_value meta_ros_package)"
 INSTALL_PREFIX="$(require_manifest_value install_prefix)"
 GZ_SIM_RUNTIME_PREFIX="$(require_manifest_value gazebo_runtime_prefix)"
 PX4_TAG="$(require_manifest_value px4_tag)"
@@ -71,7 +69,7 @@ trap 'rm -rf "${WORK_DIR}"' EXIT
 ROS_PREFIX="/opt/ros/${ROS_DISTRO}"
 AMENT_INDEX_ROOT="${ROS_PREFIX}/share/ament_index/resource_index/packages"
 RUNTIME_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-px4-sitl-${PX4_LINE//./-}"
-GZ_SIM_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-px4-gz-harmonic-${PX4_LINE//./-}"
+GZ_SIM_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-gz-harmonic-px4-${PX4_LINE//./-}"
 
 build_deb() {
   local pkg_root="$1"
@@ -229,6 +227,7 @@ cat > "${gz_share}/package.xml" <<EOF_XML
   <description>PX4 v${PX4_LINE} Gazebo Sim Harmonic models and worlds for ROS Jazzy.</description>
   <maintainer email="xgc2@example.com">XGC2</maintainer>
   <license>BSD-3-Clause</license>
+  <exec_depend>${RUNTIME_ROS_PACKAGE}</exec_depend>
   <exec_depend>gz-harmonic</exec_depend>
   <export>
     <build_type>ament_cmake</build_type>
@@ -240,42 +239,11 @@ write_control \
   "${gz_root}" \
   "${GZ_SIM_DEB_PACKAGE}" \
   "${ARCHITECTURE}" \
-  "gz-harmonic" \
-  "PX4 v${PX4_LINE} Gazebo Sim Harmonic assets for ROS Jazzy" \
-  "Installs the ${GZ_SIM_ROS_PACKAGE} ROS 2 package with PX4 Gazebo Sim models, worlds, and helper scripts."
-
-meta_root="${WORK_DIR}/${META_PACKAGE_NAME}_${PACKAGE_VERSION}_all"
-meta_share="${meta_root}${ROS_PREFIX}/share/${META_ROS_PACKAGE}"
-mkdir -p "${meta_root}/DEBIAN" "${meta_share}"
-install_ament_package_marker "${meta_root}" "${META_ROS_PACKAGE}"
-cat > "${meta_share}/package.xml" <<EOF_XML
-<?xml version="1.0"?>
-<package format="3">
-  <name>${META_ROS_PACKAGE}</name>
-  <version>${UPSTREAM_VERSION}</version>
-  <description>Meta package for the XGC2 PX4 v${PX4_LINE} SITL suite on ROS Jazzy.</description>
-  <maintainer email="xgc2@example.com">XGC2</maintainer>
-  <license>BSD-3-Clause</license>
-  <exec_depend>${RUNTIME_ROS_PACKAGE}</exec_depend>
-  <exec_depend>${GZ_SIM_ROS_PACKAGE}</exec_depend>
-  <export>
-    <build_type>ament_cmake</build_type>
-  </export>
-</package>
-EOF_XML
-
-write_control \
-  "${meta_root}" \
-  "${META_PACKAGE_NAME}" \
-  "all" \
-  "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), ${GZ_SIM_DEB_PACKAGE} (= ${PACKAGE_VERSION})" \
-  "XGC2 PX4 v${PX4_LINE} SITL suite for ROS Jazzy" \
-  "Depends on the runtime and Gazebo Sim packages for PX4-Autopilot ${PX4_TAG}."
+  "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), gz-harmonic" \
+  "PX4 v${PX4_LINE} Gazebo Sim Harmonic backend for ROS Jazzy" \
+  "Installs PX4 Gazebo Sim models, worlds, and helper scripts for PX4-Autopilot ${PX4_TAG}."
 
 assert_no_overlapping_payloads "${RUNTIME_DEB_PACKAGE}" "${runtime_root}" "${GZ_SIM_DEB_PACKAGE}" "${gz_root}"
-assert_no_overlapping_payloads "${RUNTIME_DEB_PACKAGE}" "${runtime_root}" "${META_PACKAGE_NAME}" "${meta_root}"
-assert_no_overlapping_payloads "${GZ_SIM_DEB_PACKAGE}" "${gz_root}" "${META_PACKAGE_NAME}" "${meta_root}"
 
 build_deb "${gz_root}" "${GZ_SIM_DEB_PACKAGE}" "${ARCHITECTURE}"
 build_deb "${runtime_root}" "${RUNTIME_DEB_PACKAGE}" "${ARCHITECTURE}"
-build_deb "${meta_root}" "${META_PACKAGE_NAME}" "all"

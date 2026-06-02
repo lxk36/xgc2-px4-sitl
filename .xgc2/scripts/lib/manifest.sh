@@ -6,9 +6,9 @@ manifest_path() {
     return
   fi
 
-  local script_dir
-  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-  printf '%s\n' "${script_dir}/../manifest/px4_runtime.yaml"
+  local repo_root
+  repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+  printf '%s\n' "${repo_root}/manifest/px4_runtime.yaml"
 }
 
 manifest_value() {

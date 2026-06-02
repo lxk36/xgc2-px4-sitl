@@ -119,7 +119,6 @@ docker run --rm \
       GZ_SIM_RUNTIME_PREFIX="$(manifest_value gazebo_runtime_prefix)"
       RUNTIME_ROS_PACKAGE="$(manifest_value runtime_ros_package)"
       GZ_SIM_ROS_PACKAGE="$(manifest_value gazebo_ros_package)"
-      META_ROS_PACKAGE="$(manifest_value meta_ros_package)"
       .xgc2/scripts/check_px4_runtime.sh "${INSTALL_PREFIX}"
       .xgc2/scripts/check_gz_sim_runtime.sh "${GZ_SIM_RUNTIME_PREFIX}"
       set +u
@@ -127,7 +126,6 @@ docker run --rm \
       set -u
       test "$(ros2 pkg prefix "${RUNTIME_ROS_PACKAGE}")" = "/opt/ros/jazzy"
       test "$(ros2 pkg prefix "${GZ_SIM_ROS_PACKAGE}")" = "/opt/ros/jazzy"
-      test "$(ros2 pkg prefix "${META_ROS_PACKAGE}")" = "/opt/ros/jazzy"
     fi
   '
 
