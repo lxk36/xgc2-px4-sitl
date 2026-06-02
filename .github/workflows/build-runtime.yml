@@ -63,7 +63,7 @@ jobs:
 
       - name: Build and install-check runtime packages in Docker
         run: |
-          scripts/build_runtime_deb_in_docker.sh \
+          .xgc2/scripts/build_runtime_deb_in_docker.sh \
             --work-dir "$RUNNER_TEMP/px4-runtime-work-${{ matrix.branch }}-${{ matrix.arch }}" \
             --output-dir "$GITHUB_WORKSPACE/debs"
 
@@ -75,4 +75,4 @@ jobs:
 
       - name: Publish to self-hosted APT repository
         if: ${{ env.APT_REPO_HOST != '' && env.APT_REPO_SSH_KEY != '' && env.APT_REPO_KNOWN_HOSTS != '' }}
-        run: scripts/publish_apt_repo.sh --deb-dir debs
+        run: .xgc2/scripts/publish_apt_repo.sh --deb-dir debs
