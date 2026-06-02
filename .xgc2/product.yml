@@ -9,26 +9,26 @@ ros:
   packages:
     - px4_sitl_runtime_1_14
     - sitl_gazebo_1_14
-    - xgc2_sim_1_14
 
 apt:
   distribution: focal
   install:
-    - ros-noetic-xgc2-sim-1-14
+    - ros-noetic-xgc2-gz-classic-px4-1-14
   packages:
-    - ros-noetic-xgc2-sim-1-14
     - ros-noetic-xgc2-px4-sitl-1-14
-    - ros-noetic-xgc2-px4-gazebo-classic-1-14
+    - ros-noetic-xgc2-gz-classic-px4-1-14
   depends:
     - ros-noetic-xgc2-px4-sitl-1-14
-    - ros-noetic-xgc2-px4-gazebo-classic-1-14
+    - gazebo11
+    - ros-noetic-gazebo-ros
+    - ros-noetic-mavros
 
 usage:
   install: |
     sudo apt update
-    sudo apt install ros-noetic-xgc2-sim-1-14
+    sudo apt install ros-noetic-xgc2-gz-classic-px4-1-14
   smoke_test: |
-    roslaunch --files xgc2_sim_1_14 iris_mavros_gazebo.launch
+    roslaunch --files sitl_gazebo_1_14 iris_mavros_gazebo.launch
   notes: |
     Runtime entry scripts are installed from package scripts; packaging scripts stay under .xgc2/scripts.
 
@@ -36,6 +36,5 @@ ownership:
   paths:
     - /opt/ros/noetic/share/px4_sitl_runtime_1_14
     - /opt/ros/noetic/share/sitl_gazebo_1_14
-    - /opt/ros/noetic/share/xgc2_sim_1_14
     - /opt/ros/noetic/lib/px4_sitl_runtime_1_14
     - /opt/ros/noetic/lib/sitl_gazebo_1_14

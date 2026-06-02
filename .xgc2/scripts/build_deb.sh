@@ -9,13 +9,11 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 RUNTIME_DIR="${RUNTIME_DIR:-}"
 GAZEBO_DIR="${GAZEBO_DIR:-}"
 OUTPUT_DIR="${OUTPUT_DIR:-${PWD}/debs}"
-META_PACKAGE_NAME="$(require_manifest_value package_name)"
 PACKAGE_VERSION="$(require_manifest_value debian_version)"
 UPSTREAM_VERSION="${PACKAGE_VERSION%%-*}"
 ROS_DISTRO="$(require_manifest_value ros_distro)"
 RUNTIME_ROS_PACKAGE="$(require_manifest_value runtime_ros_package)"
 GAZEBO_ROS_PACKAGE="$(require_manifest_value gazebo_ros_package)"
-META_ROS_PACKAGE="$(require_manifest_value meta_ros_package)"
 INSTALL_PREFIX="$(require_manifest_value install_prefix)"
 GAZEBO_RUNTIME_PREFIX="$(require_manifest_value gazebo_runtime_prefix)"
 GAZEBO_PLUGIN_PREFIX="$(require_manifest_value gazebo_plugin_prefix)"
@@ -72,7 +70,7 @@ trap 'rm -rf "${WORK_DIR}"' EXIT
 
 ROS_PREFIX="/opt/ros/${ROS_DISTRO}"
 RUNTIME_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-px4-sitl-${PX4_LINE//./-}"
-GAZEBO_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-px4-gazebo-classic-${PX4_LINE//./-}"
+GAZEBO_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-gz-classic-px4-${PX4_LINE//./-}"
 
 build_deb() {
   local pkg_root="$1"
@@ -184,10 +182,11 @@ write_control \
 gazebo_root="${WORK_DIR}/${GAZEBO_DEB_PACKAGE}_${PACKAGE_VERSION}_${ARCHITECTURE}"
 gazebo_share="${gazebo_root}${ROS_PREFIX}/share/${GAZEBO_ROS_PACKAGE}"
 gazebo_lib="${gazebo_root}${ROS_PREFIX}/lib/${GAZEBO_ROS_PACKAGE}"
-mkdir -p "${gazebo_root}/DEBIAN" "${gazebo_share}" "${gazebo_lib}"
+mkdir -p "${gazebo_root}/DEBIAN" "${gazebo_share}/launch" "${gazebo_lib}"
 cp -a "${GAZEBO_DIR}/models" "${gazebo_share}/models"
 cp -a "${GAZEBO_DIR}/worlds" "${gazebo_share}/worlds"
 find "${GAZEBO_DIR}/lib" -maxdepth 1 -type f -name '*.so' -exec cp -a {} "${gazebo_lib}/" \;
+install -m 0644 "${REPO_ROOT}/launch/iris_mavros_gazebo.launch" "${gazebo_share}/launch/iris_mavros_gazebo.launch"
 
 cat > "${gazebo_share}/package.xml" <<EOF_XML
 <?xml version="1.0"?>
@@ -197,6 +196,7 @@ cat > "${gazebo_share}/package.xml" <<EOF_XML
   <description>PX4 v${PX4_LINE} Gazebo Classic models, worlds, and plugins for ROS Noetic.</description>
   <maintainer email="xgc2@example.com">XGC2</maintainer>
   <license>BSD</license>
+  <exec_depend>${RUNTIME_ROS_PACKAGE}</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>mavlink</exec_depend>
@@ -215,38 +215,11 @@ write_control \
   "${gazebo_root}" \
   "${GAZEBO_DEB_PACKAGE}" \
   "${ARCHITECTURE}" \
-  "gazebo11, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, ros-noetic-gazebo-ros, ros-noetic-geometry-msgs, ros-noetic-mavlink, ros-noetic-mavros, ros-noetic-mavros-msgs, ros-noetic-roscpp, ros-noetic-sensor-msgs, ros-noetic-std-msgs" \
-  "PX4 v${PX4_LINE} Gazebo Classic assets for ROS Noetic" \
-  "Installs the ${GAZEBO_ROS_PACKAGE} ROS package with PX4 Gazebo Classic models, worlds, and plugins."
-
-meta_root="${WORK_DIR}/${META_PACKAGE_NAME}_${PACKAGE_VERSION}_all"
-meta_share="${meta_root}${ROS_PREFIX}/share/${META_ROS_PACKAGE}"
-mkdir -p "${meta_root}/DEBIAN" "${meta_share}/launch"
-install -m 0644 "${REPO_ROOT}/launch/iris_mavros_gazebo.launch" "${meta_share}/launch/iris_mavros_gazebo.launch"
-cat > "${meta_share}/package.xml" <<EOF_XML
-<?xml version="1.0"?>
-<package format="2">
-  <name>${META_ROS_PACKAGE}</name>
-  <version>${UPSTREAM_VERSION}</version>
-  <description>Meta package for the XGC2 PX4 v${PX4_LINE} SITL suite on ROS Noetic.</description>
-  <maintainer email="xgc2@example.com">XGC2</maintainer>
-  <license>BSD-3-Clause</license>
-  <exec_depend>${RUNTIME_ROS_PACKAGE}</exec_depend>
-  <exec_depend>${GAZEBO_ROS_PACKAGE}</exec_depend>
-</package>
-EOF_XML
-write_control \
-  "${meta_root}" \
-  "${META_PACKAGE_NAME}" \
-  "all" \
-  "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), ${GAZEBO_DEB_PACKAGE} (= ${PACKAGE_VERSION})" \
-  "XGC2 PX4 v${PX4_LINE} SITL suite for ROS Noetic" \
-  "Depends on the runtime and Gazebo Classic packages for PX4-Autopilot ${PX4_TAG}."
+  "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), gazebo11, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, ros-noetic-gazebo-ros, ros-noetic-geometry-msgs, ros-noetic-mavlink, ros-noetic-mavros, ros-noetic-mavros-msgs, ros-noetic-roscpp, ros-noetic-sensor-msgs, ros-noetic-std-msgs" \
+  "PX4 v${PX4_LINE} Gazebo Classic backend for ROS Noetic" \
+  "Installs PX4 Gazebo Classic models, worlds, plugins, and launch entrypoints for PX4-Autopilot ${PX4_TAG}."
 
 assert_no_overlapping_payloads "${RUNTIME_DEB_PACKAGE}" "${runtime_root}" "${GAZEBO_DEB_PACKAGE}" "${gazebo_root}"
-assert_no_overlapping_payloads "${RUNTIME_DEB_PACKAGE}" "${runtime_root}" "${META_PACKAGE_NAME}" "${meta_root}"
-assert_no_overlapping_payloads "${GAZEBO_DEB_PACKAGE}" "${gazebo_root}" "${META_PACKAGE_NAME}" "${meta_root}"
 
 build_deb "${gazebo_root}" "${GAZEBO_DEB_PACKAGE}" "${ARCHITECTURE}"
 build_deb "${runtime_root}" "${RUNTIME_DEB_PACKAGE}" "${ARCHITECTURE}"
-build_deb "${meta_root}" "${META_PACKAGE_NAME}" "all"
