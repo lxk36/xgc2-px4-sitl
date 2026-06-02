@@ -99,7 +99,7 @@ The launch file uses `/tmp/px4_sitl_runtime` as the writable rootfs so generated
 The normal local path builds inside the official ROS Noetic image:
 
 ```bash
-scripts/build_runtime_deb_in_docker.sh \
+.xgc2/scripts/build_runtime_deb_in_docker.sh \
   --work-dir /tmp/px4-runtime-work \
   --output-dir debs
 ```
@@ -109,16 +109,16 @@ The script pulls `ros:noetic-ros-base-focal`, clones PX4 v1.14.4, initializes PX
 For lower-level debugging, run the stages directly:
 
 ```bash
-scripts/fetch_px4.sh --work-dir /tmp/px4-runtime-work
-scripts/build_px4_runtime.sh --px4-dir /tmp/px4-runtime-work/PX4-Autopilot
-scripts/extract_px4_runtime.sh \
+.xgc2/scripts/fetch_px4.sh --work-dir /tmp/px4-runtime-work
+.xgc2/scripts/build_px4_runtime.sh --px4-dir /tmp/px4-runtime-work/PX4-Autopilot
+.xgc2/scripts/extract_px4_runtime.sh \
   --px4-dir /tmp/px4-runtime-work/PX4-Autopilot \
   --output-dir /tmp/px4-runtime-stage
-scripts/extract_gazebo_classic_runtime.sh \
+.xgc2/scripts/extract_gazebo_classic_runtime.sh \
   --px4-dir /tmp/px4-runtime-work/PX4-Autopilot \
   --output-dir /tmp/gazebo-runtime-stage
-scripts/check_px4_runtime.sh /tmp/px4-runtime-stage
-scripts/build_deb.sh \
+.xgc2/scripts/check_px4_runtime.sh /tmp/px4-runtime-stage
+.xgc2/scripts/build_deb.sh \
   --runtime-dir /tmp/px4-runtime-stage \
   --gazebo-dir /tmp/gazebo-runtime-stage \
   --output-dir debs
