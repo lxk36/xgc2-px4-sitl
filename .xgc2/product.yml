@@ -19,6 +19,9 @@ apt:
     - ros-noetic-xgc2-sim-1-12
     - ros-noetic-xgc2-px4-sitl-1-12
     - ros-noetic-xgc2-px4-gazebo-classic-1-12
+  depends:
+    - ros-noetic-xgc2-px4-sitl-1-12
+    - ros-noetic-xgc2-px4-gazebo-classic-1-12
 
 usage:
   install: |
