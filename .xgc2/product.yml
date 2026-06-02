@@ -1,0 +1,38 @@
+schema: xgc2.product.v1
+id: xgc2-px4-sitl-112
+name: XGC2 PX4 SITL 1.12
+kind: ros1-apt
+summary: PX4 v1.12 SITL runtime and Gazebo Classic assets for ROS Noetic.
+
+ros:
+  distro: noetic
+  packages:
+    - px4_sitl_runtime_1_12
+    - sitl_gazebo_1_12
+    - xgc2_sim_1_12
+
+apt:
+  distribution: focal
+  install:
+    - ros-noetic-xgc2-sim-1-12
+  packages:
+    - ros-noetic-xgc2-sim-1-12
+    - ros-noetic-xgc2-px4-sitl-1-12
+    - ros-noetic-xgc2-px4-gazebo-classic-1-12
+
+usage:
+  install: |
+    sudo apt update
+    sudo apt install ros-noetic-xgc2-sim-1-12
+  smoke_test: |
+    roslaunch --files xgc2_sim_1_12 iris_mavros_gazebo.launch
+  notes: |
+    Runtime entry scripts are installed from package scripts; packaging scripts stay under .xgc2/scripts.
+
+ownership:
+  paths:
+    - /opt/ros/noetic/share/px4_sitl_runtime_1_12
+    - /opt/ros/noetic/share/sitl_gazebo_1_12
+    - /opt/ros/noetic/share/xgc2_sim_1_12
+    - /opt/ros/noetic/lib/px4_sitl_runtime_1_12
+    - /opt/ros/noetic/lib/sitl_gazebo_1_12

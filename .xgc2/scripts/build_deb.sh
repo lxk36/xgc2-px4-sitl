@@ -2,8 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=scripts/lib/manifest.sh
+# shellcheck source=.xgc2/scripts/lib/manifest.sh
 source "${SCRIPT_DIR}/lib/manifest.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 RUNTIME_DIR="${RUNTIME_DIR:-}"
 GAZEBO_DIR="${GAZEBO_DIR:-}"
@@ -149,9 +150,9 @@ mkdir -p "${runtime_root}/DEBIAN" "${runtime_share}/runtime" "${runtime_share}/c
 cp -a "${RUNTIME_DIR}/." "${runtime_root}${INSTALL_PREFIX}/"
 remove_packaged_path "${runtime_root}" "${GAZEBO_RUNTIME_PREFIX}"
 remove_packaged_path "${runtime_root}" "${GAZEBO_PLUGIN_PREFIX}"
-install -m 0755 "${SCRIPT_DIR}/run_px4_sitl.sh" "${runtime_lib}/run_px4_sitl.sh"
-install -m 0755 "${SCRIPT_DIR}/setup_runtime_env.sh" "${runtime_lib}/setup_runtime_env.sh"
-install -m 0644 "${SCRIPT_DIR}/../config/runtime.env" "${runtime_share}/config/runtime.env"
+install -m 0755 "${REPO_ROOT}/scripts/run_px4_sitl.sh" "${runtime_lib}/run_px4_sitl.sh"
+install -m 0755 "${REPO_ROOT}/scripts/setup_runtime_env.sh" "${runtime_lib}/setup_runtime_env.sh"
+install -m 0644 "${REPO_ROOT}/config/runtime.env" "${runtime_share}/config/runtime.env"
 
 cat > "${runtime_share}/package.xml" <<EOF_XML
 <?xml version="1.0"?>
@@ -221,7 +222,7 @@ write_control \
 meta_root="${WORK_DIR}/${META_PACKAGE_NAME}_${PACKAGE_VERSION}_all"
 meta_share="${meta_root}${ROS_PREFIX}/share/${META_ROS_PACKAGE}"
 mkdir -p "${meta_root}/DEBIAN" "${meta_share}/launch"
-install -m 0644 "${SCRIPT_DIR}/../launch/iris_mavros_gazebo.launch" "${meta_share}/launch/iris_mavros_gazebo.launch"
+install -m 0644 "${REPO_ROOT}/launch/iris_mavros_gazebo.launch" "${meta_share}/launch/iris_mavros_gazebo.launch"
 cat > "${meta_share}/package.xml" <<EOF_XML
 <?xml version="1.0"?>
 <package format="2">

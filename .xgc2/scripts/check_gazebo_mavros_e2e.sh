@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-}"
 GAZEBO_ROOT="${SITL_GAZEBO_CLASSIC_ROOT:-}"
@@ -113,7 +114,7 @@ until gz model --list >/dev/null 2>&1; do
   sleep 1
 done
 
-"${SCRIPT_DIR}/run_px4_sitl.sh" \
+"${REPO_ROOT}/scripts/run_px4_sitl.sh" \
   --runtime-root "${RUNTIME_ROOT}" \
   --work-dir "${WORK_DIR}" \
   --instance 0 \

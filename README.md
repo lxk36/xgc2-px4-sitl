@@ -216,7 +216,7 @@ ros2 run px4_gz_sim_1_16 simulation-gazebo --world default
 Build the current branch in Docker:
 
 ```bash
-scripts/build_runtime_deb_in_docker.sh \
+.xgc2/scripts/build_runtime_deb_in_docker.sh \
   --work-dir /tmp/px4-runtime-work \
   --output-dir debs
 ```
@@ -224,13 +224,13 @@ scripts/build_runtime_deb_in_docker.sh \
 For lower-level debugging, run the stages directly:
 
 ```bash
-scripts/fetch_px4.sh --work-dir /tmp/px4-runtime-work
-scripts/build_px4_runtime.sh --px4-dir /tmp/px4-runtime-work/PX4-Autopilot
-scripts/extract_px4_runtime.sh \
+.xgc2/scripts/fetch_px4.sh --work-dir /tmp/px4-runtime-work
+.xgc2/scripts/build_px4_runtime.sh --px4-dir /tmp/px4-runtime-work/PX4-Autopilot
+.xgc2/scripts/extract_px4_runtime.sh \
   --px4-dir /tmp/px4-runtime-work/PX4-Autopilot \
   --output-dir /tmp/px4-runtime-stage
-scripts/check_px4_runtime.sh /tmp/px4-runtime-stage
-scripts/build_deb.sh \
+.xgc2/scripts/check_px4_runtime.sh /tmp/px4-runtime-stage
+.xgc2/scripts/build_deb.sh \
   --runtime-dir /tmp/px4-runtime-stage \
   --output-dir debs
 ```
