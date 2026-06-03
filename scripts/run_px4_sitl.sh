@@ -54,6 +54,7 @@ done
 
 PX4_BIN="${RUNTIME_ROOT}/bin/px4"
 PX4_ETC="${RUNTIME_ROOT}/etc"
+PX4_MAVLINK_SCRIPT="${RUNTIME_ROOT}/etc/init.d-posix/px4-rc.mavlink"
 
 if [[ ! -x "${PX4_BIN}" ]]; then
   echo "PX4 binary is missing or not executable: ${PX4_BIN}" >&2
@@ -88,7 +89,11 @@ mkdir -p "${WORK_DIR}"
 cd "${WORK_DIR}"
 
 if [[ "${RESET_PARAMS}" == "true" ]]; then
-  rm -f parameters.bson parameters_backup.bson param_import_fail.bson px4-rc.params
+  rm -f parameters.bson parameters_backup.bson param_import_fail.bson px4-rc.params px4-rc.mavlink
+fi
+
+if [[ -f "${PX4_MAVLINK_SCRIPT}" ]]; then
+  install -m 0644 "${PX4_MAVLINK_SCRIPT}" px4-rc.mavlink
 fi
 
 if [[ -n "${PARAM_BSON}" ]]; then
