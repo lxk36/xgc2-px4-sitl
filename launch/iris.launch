@@ -35,7 +35,7 @@
   <arg name="paused" default="false"/>
   <arg name="respawn_gazebo" default="false"/>
 
-  <arg name="fcu_url" default="udp://:14540@localhost:14557"/>
+  <arg name="fcu_url" default="$(eval 'udp://:' + str(14540 + int(arg('ID'))) + '@localhost:' + str(14580 + int(arg('ID'))))"/>
   <arg name="gcs_url" default=""/>
   <arg name="namespace" default=""/>
   <arg name="mavros_tgt_system" default="$(eval int(arg('ID')) + 1)"/>
