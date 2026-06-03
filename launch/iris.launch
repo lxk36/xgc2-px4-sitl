@@ -40,14 +40,14 @@
   <arg name="interactive" default="false"/>
 
   <env name="PX4_SIM_MODEL" value="$(arg px4_sim_model)"/>
-  <env name="PX4_SYS_AUTOSTART" value="$(arg sys_autostart)"/>
-  <env name="PX4_SIM_SPEED_FACTOR" value="$(arg sim_speed_factor)"/>
-  <env name="PX4_HOME_LAT" value="$(arg home_lat)"/>
-  <env name="PX4_HOME_LON" value="$(arg home_lon)"/>
-  <env name="PX4_UXRCE_DDS_NS" value="$(arg uxrce_dds_ns)"/>
-  <env name="PX4_UXRCE_DDS_PORT" value="$(arg uxrce_dds_port)"/>
-  <env name="PX4_SITL_PARAM_FILE" value="$(arg param_file)"/>
-  <env name="PX4_SITL_PARAM_BSON" value="$(arg param_bson)"/>
+  <env if="$(eval arg('sys_autostart') != '')" name="PX4_SYS_AUTOSTART" value="$(arg sys_autostart)"/>
+  <env if="$(eval arg('sim_speed_factor') != '')" name="PX4_SIM_SPEED_FACTOR" value="$(arg sim_speed_factor)"/>
+  <env if="$(eval arg('home_lat') != '')" name="PX4_HOME_LAT" value="$(arg home_lat)"/>
+  <env if="$(eval arg('home_lon') != '')" name="PX4_HOME_LON" value="$(arg home_lon)"/>
+  <env if="$(eval arg('uxrce_dds_ns') != '')" name="PX4_UXRCE_DDS_NS" value="$(arg uxrce_dds_ns)"/>
+  <env if="$(eval arg('uxrce_dds_port') != '')" name="PX4_UXRCE_DDS_PORT" value="$(arg uxrce_dds_port)"/>
+  <env if="$(eval arg('param_file') != '')" name="PX4_SITL_PARAM_FILE" value="$(arg param_file)"/>
+  <env if="$(eval arg('param_bson') != '')" name="PX4_SITL_PARAM_BSON" value="$(arg param_bson)"/>
   <env name="PX4_SITL_RESET_PARAMS" value="$(arg reset_params)"/>
   <env name="GAZEBO_PLUGIN_PATH" value="$(arg gazebo_plugin_root):$(optenv GAZEBO_PLUGIN_PATH)"/>
   <env name="GAZEBO_MODEL_PATH" value="$(arg gazebo_runtime_root)/models:$(optenv GAZEBO_MODEL_PATH)"/>
