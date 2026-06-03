@@ -27,6 +27,6 @@ test "$(rospack find "${GAZEBO_ROS_PACKAGE}")" = "/opt/ros/${ROS_DISTRO}/share/$
 "${SCRIPT_DIR}/check_px4_runtime.sh" "${INSTALL_PREFIX}"
 test -f "${GAZEBO_RUNTIME_PREFIX}/models/iris/iris.sdf"
 test -f "${GAZEBO_RUNTIME_PREFIX}/worlds/empty.world"
-roslaunch --files "${GAZEBO_ROS_PACKAGE}" iris_mavros_gazebo.launch >/tmp/xgc2-px4-sitl-launch-files.txt
+roslaunch --files "${GAZEBO_ROS_PACKAGE}" iris.launch >/tmp/xgc2-px4-sitl-launch-files.txt
 
 echo "Installed runtime check passed: ${PACKAGE_NAME}"

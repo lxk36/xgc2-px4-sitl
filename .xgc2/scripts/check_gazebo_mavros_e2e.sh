@@ -6,7 +6,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 RUNTIME_ROOT="${PX4_SITL_RUNTIME_ROOT:-}"
 GAZEBO_ROOT="${SITL_GAZEBO_CLASSIC_ROOT:-}"
-WORK_DIR="${PX4_SITL_WORK_DIR:-/tmp/px4_sitl_runtime_e2e}"
+WORK_DIR="${PX4_SITL_WORK_DIR:-/tmp/px4_sitl_e2e}"
 MODEL="${PX4_SIM_MODEL:-iris}"
 TIMEOUT_S="${PX4_E2E_TIMEOUT_S:-90}"
 

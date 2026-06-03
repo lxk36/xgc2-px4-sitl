@@ -13,8 +13,8 @@ Each active branch maps to one PX4/ROS/Ubuntu runtime line:
 
 | Branch | PX4 tag | ROS | Ubuntu APT distribution | Gazebo stack | Debian package |
 | --- | --- | --- | --- | --- | --- |
-| `v1.12-noetic` | `v1.12.3` | ROS Noetic | `focal` | Gazebo Classic | `ros-noetic-xgc2-gz-classic-px4-1-12` |
-| `v1.14-noetic` | `v1.14.4` | ROS Noetic | `focal` | Gazebo Classic | `ros-noetic-xgc2-gz-classic-px4-1-14` |
+| `v1.12-noetic` | `v1.12.3` | ROS Noetic | `focal` | Gazebo Classic | `ros-noetic-xgc2-gazebo-sim-px4-1-12` |
+| `v1.14-noetic` | `v1.14.4` | ROS Noetic | `focal` | Gazebo Classic | `ros-noetic-xgc2-gazebo-sim-px4-1-14` |
 | `v1.16-jazzy` | `v1.16.2` | ROS 2 Jazzy | `noble` | Gazebo Sim Harmonic | `ros-jazzy-xgc2-gz-harmonic-px4-1-16` |
 
 The package name encodes the PX4 maintenance line. Debian package versions track
@@ -25,21 +25,21 @@ the PX4 tag plus a packaging revision, for example `1.12.3-1` then `1.12.3-2`.
 `v1.12-noetic` installs:
 
 ```text
-px4_sitl_runtime_1_12
-sitl_gazebo_1_12
+px4_sitl_1_12
+gazebo_sim_px4_1_12
 ```
 
 `v1.14-noetic` installs:
 
 ```text
-px4_sitl_runtime_1_14
-sitl_gazebo_1_14
+px4_sitl_1_14
+gazebo_sim_px4_1_14
 ```
 
 `v1.16-jazzy` installs:
 
 ```text
-px4_sitl_runtime_1_16
+px4_sitl_1_16
 px4_gz_sim_1_16
 ```
 
@@ -153,8 +153,8 @@ echo "deb [signed-by=/usr/share/keyrings/xgc2-archive-keyring.gpg arch=amd64] $A
   sudo tee /etc/apt/sources.list.d/xgc2-px4-sitl.list
 
 sudo apt update
-sudo apt install ros-noetic-xgc2-gz-classic-px4-1-12
-sudo apt install ros-noetic-xgc2-gz-classic-px4-1-14
+sudo apt install ros-noetic-xgc2-gazebo-sim-px4-1-12
+sudo apt install ros-noetic-xgc2-gazebo-sim-px4-1-14
 ```
 
 For ROS 2 Jazzy / Ubuntu 24.04 `noble`:
@@ -172,8 +172,8 @@ sudo apt install ros-jazzy-xgc2-gz-harmonic-px4-1-16
 Check available package versions:
 
 ```bash
-apt-cache madison ros-noetic-xgc2-gz-classic-px4-1-12
-apt-cache madison ros-noetic-xgc2-gz-classic-px4-1-14
+apt-cache madison ros-noetic-xgc2-gazebo-sim-px4-1-12
+apt-cache madison ros-noetic-xgc2-gazebo-sim-px4-1-14
 apt-cache madison ros-jazzy-xgc2-gz-harmonic-px4-1-16
 ```
 
@@ -183,21 +183,53 @@ PX4 v1.12 / ROS Noetic:
 
 ```bash
 source /opt/ros/noetic/setup.bash
-roslaunch sitl_gazebo_1_12 iris_mavros_gazebo.launch vehicle:=iris gui:=true
+roslaunch gazebo_sim_px4_1_12 iris.launch vehicle:=iris gui:=true
+```
+
+Use an external PX4 text parameter file and a tuned SDF from a lightweight
+wrapper package:
+
+```bash
+source /opt/ros/noetic/setup.bash
+roslaunch gazebo_sim_px4_1_12 iris.launch \
+  vehicle:=iris \
+  px4_sim_model:=iris \
+  model_name:=fs150_4 \
+  ID:=3 \
+  work_dir:=$HOME/.xgc2/px4_sitl/fs150_4 \
+  param_file:=/path/to/fs150-mav_sys_id4.params \
+  sdf:=/path/to/fs150_iris.sdf \
+  reset_params:=true
+```
+
+The launch file is intended to be reused by lightweight aircraft-specific
+wrapper packages. The wrapper can keep tuned assets outside the installed PX4
+runtime and pass them through launch arguments:
+
+```text
+param_file       PX4 text .params file exported by QGroundControl/PX4 tools.
+param_bson       PX4 persistent parameters.bson snapshot.
+reset_params     Remove the writable rootfs parameter cache before launch.
+sdf              Tuned Gazebo model file.
+model_name       Gazebo model instance name.
+px4_sim_model    PX4 simulator model name used by the startup scripts.
+sys_autostart    Optional PX4 SYS_AUTOSTART override.
+startup_script   Runtime-relative or absolute PX4 startup script path.
+work_dir         Per-vehicle writable PX4 rootfs directory.
 ```
 
 PX4 v1.14 / ROS Noetic:
 
 ```bash
 source /opt/ros/noetic/setup.bash
-roslaunch sitl_gazebo_1_14 iris_mavros_gazebo.launch vehicle:=iris gui:=true
+roslaunch gazebo_sim_px4_1_14 iris.launch vehicle:=iris gui:=true
 ```
 
 PX4 v1.16 / ROS 2 Jazzy:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-ros2 pkg prefix px4_sitl_runtime_1_16
+ros2 pkg prefix px4_sitl_1_16
 ros2 pkg prefix px4_gz_sim_1_16
 ```
 

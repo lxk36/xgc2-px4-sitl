@@ -2,10 +2,23 @@
 <launch>
   <arg name="ID" default="0"/>
   <arg name="vehicle" default="iris"/>
-  <arg name="runtime_root" default="$(find px4_sitl_runtime_1_12)/runtime"/>
-  <arg name="gazebo_runtime_root" default="$(find sitl_gazebo_1_12)"/>
-  <arg name="gazebo_plugin_root" default="/opt/ros/noetic/lib/sitl_gazebo_1_12"/>
-  <arg name="work_dir" default="/tmp/px4_sitl_runtime/$(arg vehicle)_$(arg ID)"/>
+  <arg name="model_name" default="uav1"/>
+  <arg name="px4_sim_model" default="$(arg vehicle)"/>
+  <arg name="runtime_root" default="/opt/ros/noetic/share/px4_sitl_1_12/runtime"/>
+  <arg name="gazebo_runtime_root" default="/opt/ros/noetic/share/gazebo_sim_px4_1_12"/>
+  <arg name="gazebo_plugin_root" default="/opt/ros/noetic/lib/gazebo_sim_px4_1_12"/>
+  <arg name="work_dir" default="/tmp/px4_sitl/$(arg model_name)"/>
+  <arg name="startup_script" default="etc/init.d-posix/rcS"/>
+  <arg name="param_file" default=""/>
+  <arg name="param_bson" default=""/>
+  <arg name="reset_params" default="false"/>
+  <arg name="sys_autostart" default=""/>
+  <arg name="sim_speed_factor" default=""/>
+  <arg name="home_lat" default=""/>
+  <arg name="home_lon" default=""/>
+  <arg name="uxrce_dds_ns" default=""/>
+  <arg name="uxrce_dds_port" default=""/>
+  <arg name="px4_extra_args" default=""/>
 
   <arg name="x" default="0"/>
   <arg name="y" default="0"/>
@@ -26,7 +39,16 @@
   <arg name="respawn_mavros" default="false"/>
   <arg name="interactive" default="false"/>
 
-  <env name="PX4_SIM_MODEL" value="$(arg vehicle)"/>
+  <env name="PX4_SIM_MODEL" value="$(arg px4_sim_model)"/>
+  <env name="PX4_SYS_AUTOSTART" value="$(arg sys_autostart)"/>
+  <env name="PX4_SIM_SPEED_FACTOR" value="$(arg sim_speed_factor)"/>
+  <env name="PX4_HOME_LAT" value="$(arg home_lat)"/>
+  <env name="PX4_HOME_LON" value="$(arg home_lon)"/>
+  <env name="PX4_UXRCE_DDS_NS" value="$(arg uxrce_dds_ns)"/>
+  <env name="PX4_UXRCE_DDS_PORT" value="$(arg uxrce_dds_port)"/>
+  <env name="PX4_SITL_PARAM_FILE" value="$(arg param_file)"/>
+  <env name="PX4_SITL_PARAM_BSON" value="$(arg param_bson)"/>
+  <env name="PX4_SITL_RESET_PARAMS" value="$(arg reset_params)"/>
   <env name="GAZEBO_PLUGIN_PATH" value="$(arg gazebo_plugin_root):$(optenv GAZEBO_PLUGIN_PATH)"/>
   <env name="GAZEBO_MODEL_PATH" value="$(arg gazebo_runtime_root)/models:$(optenv GAZEBO_MODEL_PATH)"/>
   <env name="LD_LIBRARY_PATH" value="$(arg gazebo_plugin_root):$(optenv LD_LIBRARY_PATH)"/>
@@ -34,8 +56,8 @@
   <arg unless="$(arg interactive)" name="px4_command_arg1" value="-d"/>
   <arg     if="$(arg interactive)" name="px4_command_arg1" value=""/>
 
-  <node name="sitl" pkg="px4_sitl_runtime_1_12" type="run_px4_sitl.sh" output="screen" required="true"
-        args="--runtime-root $(arg runtime_root) --work-dir $(arg work_dir) --instance $(arg ID) -- $(arg px4_command_arg1)"/>
+  <node name="sitl" pkg="px4_sitl_1_12" type="run_px4_sitl.sh" output="screen" required="true"
+        args="--runtime-root $(arg runtime_root) --work-dir $(arg work_dir) --instance $(arg ID) --script $(arg startup_script) -- $(arg px4_command_arg1) $(arg px4_extra_args)"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="gui" value="$(arg gui)"/>
@@ -47,7 +69,7 @@
   </include>
 
   <node name="$(anon vehicle_spawn)" pkg="gazebo_ros" type="spawn_model" output="screen"
-        args="-sdf -file $(arg sdf) -model $(arg vehicle) -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
+        args="-sdf -file $(arg sdf) -model $(arg model_name) -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="gcs_url" value=""/>

@@ -70,7 +70,7 @@ trap 'rm -rf "${WORK_DIR}"' EXIT
 
 ROS_PREFIX="/opt/ros/${ROS_DISTRO}"
 RUNTIME_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-px4-sitl-${PX4_LINE//./-}"
-GAZEBO_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-gz-classic-px4-${PX4_LINE//./-}"
+GAZEBO_DEB_PACKAGE="ros-${ROS_DISTRO}-xgc2-gazebo-sim-px4-${PX4_LINE//./-}"
 
 build_deb() {
   local pkg_root="$1"
@@ -186,7 +186,7 @@ mkdir -p "${gazebo_root}/DEBIAN" "${gazebo_share}/launch" "${gazebo_lib}"
 cp -a "${GAZEBO_DIR}/models" "${gazebo_share}/models"
 cp -a "${GAZEBO_DIR}/worlds" "${gazebo_share}/worlds"
 find "${GAZEBO_DIR}/lib" -maxdepth 1 -type f -name '*.so' -exec cp -a {} "${gazebo_lib}/" \;
-install -m 0644 "${REPO_ROOT}/launch/iris_mavros_gazebo.launch" "${gazebo_share}/launch/iris_mavros_gazebo.launch"
+install -m 0644 "${REPO_ROOT}/launch/iris.launch" "${gazebo_share}/launch/iris.launch"
 
 cat > "${gazebo_share}/package.xml" <<EOF_XML
 <?xml version="1.0"?>
