@@ -1,4 +1,4 @@
-# px4_sitl_runtime
+# px4_sitl
 
 Build rules for the XGC2 PX4 v1.14 SITL Debian package on ROS Noetic.
 
@@ -9,26 +9,26 @@ This repository is intentionally small. It does not store PX4 source trees, PX4 
 This branch publishes one user-facing Gazebo Classic Debian package:
 
 ```bash
-ros-noetic-xgc2-gz-classic-px4-1-14
+ros-noetic-xgc2-gazebo-sim-px4-1-14
 ```
 
-The build emits a PX4 SITL runtime package and a Gazebo Classic package. Installing `ros-noetic-xgc2-gz-classic-px4-1-14` also installs the matching PX4 runtime dependency and provides these ROS packages under `/opt/ros/noetic`:
+The build emits a PX4 SITL runtime package and a Gazebo Classic package. Installing `ros-noetic-xgc2-gazebo-sim-px4-1-14` also installs the matching PX4 runtime dependency and provides these ROS packages under `/opt/ros/noetic`:
 
 ```text
-px4_sitl_runtime_1_14
-sitl_gazebo_1_14
+px4_sitl_1_14
+gazebo_sim_px4_1_14
 ```
 
-`px4_sitl_runtime_1_14` contains PX4 SITL runtime files and helper scripts. `sitl_gazebo_1_14` contains the PX4 Gazebo Classic models, worlds, plugin libraries, and combined MAVROS/Gazebo launch file from PX4 v1.14.
+`px4_sitl_1_14` contains PX4 SITL runtime files and helper scripts. `gazebo_sim_px4_1_14` contains the PX4 Gazebo Classic models, worlds, plugin libraries, and combined MAVROS/Gazebo launch file from PX4 v1.14.
 
 The PX4 maintenance line is encoded in the Debian package name. The Debian `Version` tracks the exact PX4 tag plus a packaging revision:
 
 ```text
-PX4 v1.14.4 -> ros-noetic-xgc2-gz-classic-px4-1-14 1.14.4-1
-PX4 v1.14.4 packaging fix -> ros-noetic-xgc2-gz-classic-px4-1-14 1.14.4-2
+PX4 v1.14.4 -> ros-noetic-xgc2-gazebo-sim-px4-1-14 1.14.4-1
+PX4 v1.14.4 packaging fix -> ros-noetic-xgc2-gazebo-sim-px4-1-14 1.14.4-2
 ```
 
-Other Ubuntu 20.04 compatible PX4 lines can use separate package names such as `ros-noetic-xgc2-gz-classic-px4-1-12`. This keeps APT versioning for revisions within the same PX4 line instead of using it to switch major runtime layouts.
+Other Ubuntu 20.04 compatible PX4 lines can use separate package names such as `ros-noetic-xgc2-gazebo-sim-px4-1-12`. This keeps APT versioning for revisions within the same PX4 line instead of using it to switch major runtime layouts.
 
 ## User Installation
 
@@ -42,20 +42,52 @@ echo "deb [signed-by=/usr/share/keyrings/xgc2-archive-keyring.gpg arch=amd64] ht
   sudo tee /etc/apt/sources.list.d/xgc2.list
 
 sudo apt update
-sudo apt install ros-noetic-xgc2-gz-classic-px4-1-14
+sudo apt install ros-noetic-xgc2-gazebo-sim-px4-1-14
 ```
 
 Check available packaging revisions:
 
 ```bash
-apt-cache madison ros-noetic-xgc2-gz-classic-px4-1-14
+apt-cache madison ros-noetic-xgc2-gazebo-sim-px4-1-14
 ```
 
 Launch Iris with MAVROS and Gazebo Classic:
 
 ```bash
 source /opt/ros/noetic/setup.bash
-roslaunch sitl_gazebo_1_14 iris_mavros_gazebo.launch vehicle:=iris gui:=true
+roslaunch gazebo_sim_px4_1_14 iris.launch vehicle:=iris gui:=true
+```
+
+Use an external PX4 text parameter file and a tuned SDF from a lightweight
+wrapper package:
+
+```bash
+source /opt/ros/noetic/setup.bash
+roslaunch gazebo_sim_px4_1_14 iris.launch \
+  vehicle:=iris \
+  px4_sim_model:=gazebo-classic_iris \
+  model_name:=fs150_4 \
+  ID:=3 \
+  work_dir:=$HOME/.xgc2/px4_sitl/fs150_4 \
+  param_file:=/path/to/fs150-mav_sys_id4.params \
+  sdf:=/path/to/fs150_iris.sdf \
+  reset_params:=true
+```
+
+The launch file is intended to be reused by lightweight aircraft-specific
+wrapper packages. The wrapper can keep tuned assets outside the installed PX4
+runtime and pass them through launch arguments:
+
+```text
+param_file       PX4 text .params file exported by QGroundControl/PX4 tools.
+param_bson       PX4 persistent parameters.bson snapshot.
+reset_params     Remove the writable rootfs parameter cache before launch.
+sdf              Tuned Gazebo model file.
+model_name       Gazebo model instance name.
+px4_sim_model    PX4 simulator model name used by the startup scripts.
+sys_autostart    Optional PX4 SYS_AUTOSTART override.
+startup_script   Runtime-relative or absolute PX4 startup script path.
+work_dir         Per-vehicle writable PX4 rootfs directory.
 ```
 
 ## Installed Layout
@@ -63,7 +95,7 @@ roslaunch sitl_gazebo_1_14 iris_mavros_gazebo.launch vehicle:=iris gui:=true
 PX4 SITL runtime:
 
 ```text
-/opt/ros/noetic/share/px4_sitl_runtime_1_14/
+/opt/ros/noetic/share/px4_sitl_1_14/
 ├── config/
 ├── package.xml
 └── runtime/
@@ -78,17 +110,17 @@ PX4 SITL runtime:
 Gazebo Classic runtime:
 
 ```text
-/opt/ros/noetic/share/sitl_gazebo_1_14/
+/opt/ros/noetic/share/gazebo_sim_px4_1_14/
 ├── launch/
 ├── models/
 ├── package.xml
 └── worlds/
 
-/opt/ros/noetic/lib/sitl_gazebo_1_14/
+/opt/ros/noetic/lib/gazebo_sim_px4_1_14/
 └── lib*.so
 ```
 
-The launch file uses `/tmp/px4_sitl_runtime` as the writable rootfs so generated PX4 files such as `parameters.bson`, `dataman`, and logs do not pollute installed files.
+The launch file uses `/tmp/px4_sitl` as the writable rootfs so generated PX4 files such as `parameters.bson`, `dataman`, and logs do not pollute installed files.
 
 ## Local Build
 
@@ -193,9 +225,9 @@ The `build-runtime` GitHub Actions workflow:
 7. Builds `px4_sitl_default` and the Gazebo Classic `sitl_gazebo-classic` target.
 8. Extracts PX4 runtime files, Gazebo Classic models, worlds, and plugins.
 9. Runs lightweight PX4 runtime and package layout checks.
-10. Builds `ros-noetic-xgc2-px4-sitl-1-14` and `ros-noetic-xgc2-gz-classic-px4-1-14`.
+10. Builds `ros-noetic-xgc2-px4-sitl-1-14` and `ros-noetic-xgc2-gazebo-sim-px4-1-14`.
 11. Installs the `.deb` inside the container.
-12. Checks `px4_sitl_runtime_1_14` and `sitl_gazebo_1_14` with `rospack`.
+12. Checks `px4_sitl_1_14` and `gazebo_sim_px4_1_14` with `rospack`.
 13. Uploads the `.deb` as a workflow artifact named by Debian architecture.
 14. Publishes to the self-hosted APT repository when these repository secrets
     are configured: `APT_REPO_HOST`, `APT_REPO_PORT`, `APT_REPO_SSH_KEY`, and

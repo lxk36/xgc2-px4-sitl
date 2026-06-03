@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>px4_sitl_runtime</name>
+  <name>gazebo_sim_px4_1_14</name>
   <version>1.14.4</version>
   <description>ROS launch wrapper and CI control package for PX4 SITL runtime packages.</description>
 

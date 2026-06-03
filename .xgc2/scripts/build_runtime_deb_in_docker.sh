@@ -50,7 +50,7 @@ fi
 docker run --rm \
   -e DEBIAN_FRONTEND=noninteractive \
   -e INSTALL_CHECK="${INSTALL_CHECK}" \
-  -v "${REPO_ROOT}:/workspace/px4_sitl_runtime:ro" \
+  -v "${REPO_ROOT}:/workspace/px4_sitl:ro" \
   -v "${WORK_DIR}:/workspace/work" \
   -v "${OUTPUT_DIR}:/workspace/out" \
   "${DOCKER_IMAGE}" \
@@ -107,7 +107,7 @@ docker run --rm \
       wget \
       zip
 
-    cd /workspace/px4_sitl_runtime
+    cd /workspace/px4_sitl
     PX4_DIR="$(.xgc2/scripts/fetch_px4.sh --work-dir /workspace/work)"
 
     if [[ -x "${PX4_DIR}/Tools/setup/ubuntu.sh" ]]; then
@@ -138,7 +138,7 @@ docker run --rm \
       set -u
       test "$(rospack find "${RUNTIME_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${RUNTIME_ROS_PACKAGE}"
       test "$(rospack find "${GAZEBO_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${GAZEBO_ROS_PACKAGE}"
-      roslaunch --files "${GAZEBO_ROS_PACKAGE}" iris_mavros_gazebo.launch >/tmp/px4-sitl-runtime-launch-files.txt
+      roslaunch --files "${GAZEBO_ROS_PACKAGE}" iris.launch >/tmp/px4-sitl-runtime-launch-files.txt
     fi
   '
 
