@@ -187,6 +187,7 @@ cp -a "${GAZEBO_DIR}/models" "${gazebo_share}/models"
 cp -a "${GAZEBO_DIR}/worlds" "${gazebo_share}/worlds"
 find "${GAZEBO_DIR}/lib" -maxdepth 1 -type f -name '*.so' -exec cp -a {} "${gazebo_lib}/" \;
 install -m 0644 "${REPO_ROOT}/launch/iris.launch" "${gazebo_share}/launch/iris.launch"
+install -m 0755 "${REPO_ROOT}/scripts/spawn_sdf_model.py" "${gazebo_lib}/spawn_sdf_model.py"
 
 cat > "${gazebo_share}/package.xml" <<EOF_XML
 <?xml version="1.0"?>
@@ -197,11 +198,14 @@ cat > "${gazebo_share}/package.xml" <<EOF_XML
   <maintainer email="xgc2@example.com">XGC2</maintainer>
   <license>BSD</license>
   <exec_depend>${RUNTIME_ROS_PACKAGE}</exec_depend>
+  <exec_depend>gazebo_msgs</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>mavlink</exec_depend>
   <exec_depend>mavros</exec_depend>
   <exec_depend>mavros_msgs</exec_depend>
+  <exec_depend>python3</exec_depend>
+  <exec_depend>rospy</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
@@ -215,7 +219,7 @@ write_control \
   "${gazebo_root}" \
   "${GAZEBO_DEB_PACKAGE}" \
   "${ARCHITECTURE}" \
-  "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), gazebo11, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, ros-noetic-gazebo-ros, ros-noetic-geometry-msgs, ros-noetic-mavlink, ros-noetic-mavros, ros-noetic-mavros-msgs, ros-noetic-roscpp, ros-noetic-sensor-msgs, ros-noetic-std-msgs" \
+  "${RUNTIME_DEB_PACKAGE} (= ${PACKAGE_VERSION}), gazebo11, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-good, gstreamer1.0-plugins-ugly, python3, ros-noetic-gazebo-msgs, ros-noetic-gazebo-ros, ros-noetic-geometry-msgs, ros-noetic-mavlink, ros-noetic-mavros, ros-noetic-mavros-msgs, ros-noetic-rospy, ros-noetic-roscpp, ros-noetic-sensor-msgs, ros-noetic-std-msgs" \
   "PX4 v${PX4_LINE} Gazebo Classic backend for ROS Noetic" \
   "Installs PX4 Gazebo Classic models, worlds, plugins, and launch entrypoints for PX4-Autopilot ${PX4_TAG}."
 

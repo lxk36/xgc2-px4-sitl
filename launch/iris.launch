@@ -29,6 +29,10 @@
 
   <arg name="world" default="$(arg gazebo_runtime_root)/worlds/empty.world"/>
   <arg name="sdf" default="$(arg gazebo_runtime_root)/models/$(arg vehicle)/$(arg vehicle).sdf"/>
+  <arg name="mavlink_tcp_port" default="$(eval 4560 + int(arg('ID')))"/>
+  <arg name="mavlink_udp_port" default="$(eval 14560 + int(arg('ID')))"/>
+  <arg name="qgc_udp_port" default="14550"/>
+  <arg name="sdk_udp_port" default="$(eval 14540 + int(arg('ID')))"/>
   <arg name="gui" default="true"/>
   <arg name="debug" default="false"/>
   <arg name="verbose" default="false"/>
@@ -71,8 +75,8 @@
     <arg name="respawn_gazebo" value="$(arg respawn_gazebo)"/>
   </include>
 
-  <node name="$(anon vehicle_spawn)" pkg="gazebo_ros" type="spawn_model" output="screen"
-        args="-sdf -file $(arg sdf) -model $(arg model_name) -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
+  <node name="$(anon vehicle_spawn)" pkg="gazebo_sim_px4_1_12" type="spawn_sdf_model.py" output="screen"
+        args="--sdf $(arg sdf) --model $(arg model_name) --x $(arg x) --y $(arg y) --z $(arg z) --roll $(arg R) --pitch $(arg P) --yaw $(arg Y) --mavlink-tcp-port $(arg mavlink_tcp_port) --mavlink-udp-port $(arg mavlink_udp_port) --qgc-udp-port $(arg qgc_udp_port) --sdk-udp-port $(arg sdk_udp_port)"/>
 
   <group if="$(eval arg('namespace') == '')">
     <include file="$(find mavros)/launch/px4.launch">
