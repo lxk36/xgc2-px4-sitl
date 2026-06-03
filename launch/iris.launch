@@ -36,6 +36,9 @@
   <arg name="respawn_gazebo" default="false"/>
 
   <arg name="fcu_url" default="udp://:14540@localhost:14557"/>
+  <arg name="gcs_url" default=""/>
+  <arg name="namespace" default=""/>
+  <arg name="mavros_tgt_system" default="$(eval int(arg('ID')) + 1)"/>
   <arg name="respawn_mavros" default="false"/>
   <arg name="interactive" default="false"/>
 
@@ -71,9 +74,21 @@
   <node name="$(anon vehicle_spawn)" pkg="gazebo_ros" type="spawn_model" output="screen"
         args="-sdf -file $(arg sdf) -model $(arg model_name) -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
 
-  <include file="$(find mavros)/launch/px4.launch">
-    <arg name="gcs_url" value=""/>
-    <arg name="fcu_url" value="$(arg fcu_url)"/>
-    <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
-  </include>
+  <group if="$(eval arg('namespace') == '')">
+    <include file="$(find mavros)/launch/px4.launch">
+      <arg name="gcs_url" value="$(arg gcs_url)"/>
+      <arg name="fcu_url" value="$(arg fcu_url)"/>
+      <arg name="tgt_system" value="$(arg mavros_tgt_system)"/>
+      <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
+    </include>
+  </group>
+
+  <group if="$(eval arg('namespace') != '')" ns="$(arg namespace)">
+    <include file="$(find mavros)/launch/px4.launch">
+      <arg name="gcs_url" value="$(arg gcs_url)"/>
+      <arg name="fcu_url" value="$(arg fcu_url)"/>
+      <arg name="tgt_system" value="$(arg mavros_tgt_system)"/>
+      <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
+    </include>
+  </group>
 </launch>
