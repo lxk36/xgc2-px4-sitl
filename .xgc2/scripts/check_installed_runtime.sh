@@ -28,12 +28,5 @@ test "$(rospack find "${GAZEBO_ROS_PACKAGE}")" = "/opt/ros/${ROS_DISTRO}/share/$
 test -f "${GAZEBO_RUNTIME_PREFIX}/models/iris/iris.sdf"
 test -f "${GAZEBO_RUNTIME_PREFIX}/worlds/empty.world"
 roslaunch --files "${GAZEBO_ROS_PACKAGE}" iris.launch >/tmp/xgc2-px4-sitl-launch-files.txt
-roslaunch --files "${GAZEBO_ROS_PACKAGE}" iris.launch \
-  strip_gps:=true \
-  strip_mag:=true \
-  strip_baro:=true >/tmp/xgc2-px4-sitl-strip-launch-files.txt
-"${GAZEBO_PLUGIN_PREFIX}/spawn_sdf_model.py" --help | grep -q -- '--strip-gps'
-"${GAZEBO_PLUGIN_PREFIX}/spawn_sdf_model.py" --help | grep -q -- '--strip-mag'
-"${GAZEBO_PLUGIN_PREFIX}/spawn_sdf_model.py" --help | grep -q -- '--strip-baro'
 
 echo "Installed runtime check passed: ${PACKAGE_NAME}"

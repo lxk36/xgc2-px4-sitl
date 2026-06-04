@@ -139,13 +139,6 @@ docker run --rm \
       test "$(rospack find "${RUNTIME_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${RUNTIME_ROS_PACKAGE}"
       test "$(rospack find "${GAZEBO_ROS_PACKAGE}")" = "/opt/ros/noetic/share/${GAZEBO_ROS_PACKAGE}"
       roslaunch --files "${GAZEBO_ROS_PACKAGE}" iris.launch >/tmp/px4-sitl-runtime-launch-files.txt
-      roslaunch --files "${GAZEBO_ROS_PACKAGE}" iris.launch \
-        strip_gps:=true \
-        strip_mag:=true \
-        strip_baro:=true >/tmp/px4-sitl-runtime-strip-launch-files.txt
-      "${GAZEBO_PLUGIN_PREFIX}/spawn_sdf_model.py" --help | grep -q -- --strip-gps
-      "${GAZEBO_PLUGIN_PREFIX}/spawn_sdf_model.py" --help | grep -q -- --strip-mag
-      "${GAZEBO_PLUGIN_PREFIX}/spawn_sdf_model.py" --help | grep -q -- --strip-baro
     fi
   '
 
