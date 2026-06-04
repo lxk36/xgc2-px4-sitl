@@ -33,6 +33,9 @@
   <arg name="mavlink_udp_port" default="$(eval 14560 + int(arg('ID')))"/>
   <arg name="qgc_udp_port" default="14550"/>
   <arg name="sdk_udp_port" default="$(eval 14540 + int(arg('ID')))"/>
+  <arg name="strip_gps" default="false"/>
+  <arg name="strip_mag" default="false"/>
+  <arg name="strip_baro" default="false"/>
   <arg name="gui" default="true"/>
   <arg name="debug" default="false"/>
   <arg name="verbose" default="false"/>
@@ -76,7 +79,7 @@
   </include>
 
   <node name="$(anon vehicle_spawn)" pkg="gazebo_sim_px4_1_12" type="spawn_sdf_model.py" output="screen"
-        args="--sdf $(arg sdf) --model $(arg model_name) --x $(arg x) --y $(arg y) --z $(arg z) --roll $(arg R) --pitch $(arg P) --yaw $(arg Y) --mavlink-tcp-port $(arg mavlink_tcp_port) --mavlink-udp-port $(arg mavlink_udp_port) --qgc-udp-port $(arg qgc_udp_port) --sdk-udp-port $(arg sdk_udp_port)"/>
+        args="--sdf $(arg sdf) --model $(arg model_name) --x $(arg x) --y $(arg y) --z $(arg z) --roll $(arg R) --pitch $(arg P) --yaw $(arg Y) --mavlink-tcp-port $(arg mavlink_tcp_port) --mavlink-udp-port $(arg mavlink_udp_port) --qgc-udp-port $(arg qgc_udp_port) --sdk-udp-port $(arg sdk_udp_port) --strip-gps $(arg strip_gps) --strip-mag $(arg strip_mag) --strip-baro $(arg strip_baro)"/>
 
   <group if="$(eval arg('namespace') == '')">
     <include file="$(find mavros)/launch/px4.launch">
