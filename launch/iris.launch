@@ -41,7 +41,7 @@
 
   <arg name="fcu_url" default="$(eval 'udp://:' + str(14540 + int(arg('ID'))) + '@localhost:' + str(14580 + int(arg('ID'))))"/>
   <arg name="gcs_url" default=""/>
-  <arg name="namespace" default=""/>
+  <arg name="ns" default=""/>
   <arg name="mavros_tgt_system" default="$(eval int(arg('ID')) + 1)"/>
   <arg name="respawn_mavros" default="false"/>
   <arg name="interactive" default="false"/>
@@ -78,7 +78,7 @@
   <node name="$(anon vehicle_spawn)" pkg="gazebo_sim_px4_1_12" type="spawn_sdf_model.py" output="screen"
         args="--sdf $(arg sdf) --model $(arg model_name) --x $(arg x) --y $(arg y) --z $(arg z) --roll $(arg R) --pitch $(arg P) --yaw $(arg Y) --mavlink-tcp-port $(arg mavlink_tcp_port) --mavlink-udp-port $(arg mavlink_udp_port) --qgc-udp-port $(arg qgc_udp_port) --sdk-udp-port $(arg sdk_udp_port)"/>
 
-  <group if="$(eval arg('namespace') == '')">
+  <group if="$(eval arg('ns') == '')">
     <include file="$(find mavros)/launch/px4.launch">
       <arg name="gcs_url" value="$(arg gcs_url)"/>
       <arg name="fcu_url" value="$(arg fcu_url)"/>
@@ -87,7 +87,7 @@
     </include>
   </group>
 
-  <group if="$(eval arg('namespace') != '')" ns="$(arg namespace)">
+  <group if="$(eval arg('ns') != '')" ns="$(arg ns)">
     <include file="$(find mavros)/launch/px4.launch">
       <arg name="gcs_url" value="$(arg gcs_url)"/>
       <arg name="fcu_url" value="$(arg fcu_url)"/>
