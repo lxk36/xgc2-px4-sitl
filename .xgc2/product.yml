@@ -42,7 +42,5 @@ ownership:
 
 release:
   repository: lxk36/xgc2-px4-sitl
-  ref: master
-  workflow: build-runtime
-  inputs:
-    package_branch: v1.12-noetic
+  ref: v1.12-noetic
+  workflow: release.yml
