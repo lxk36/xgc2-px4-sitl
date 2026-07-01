@@ -6,6 +6,7 @@
   <arg name="px4_sim_model" default="gazebo-classic_$(arg vehicle)"/>
   <arg name="runtime_root" default="/opt/ros/noetic/share/px4_sitl_1_14/runtime"/>
   <arg name="gazebo_runtime_root" default="/opt/ros/noetic/share/gazebo_sim_px4_1_14"/>
+  <arg name="gazebo_model_path_extra" default=""/>
   <arg name="gazebo_plugin_root" default="/opt/ros/noetic/lib/gazebo_sim_px4_1_14"/>
   <arg name="work_dir" default="/tmp/px4_sitl/$(arg model_name)"/>
   <arg name="startup_script" default="etc/init.d-posix/rcS"/>
@@ -57,7 +58,7 @@
   <env if="$(eval arg('param_bson') != '')" name="PX4_SITL_PARAM_BSON" value="$(arg param_bson)"/>
   <env name="PX4_SITL_RESET_PARAMS" value="$(arg reset_params)"/>
   <env name="GAZEBO_PLUGIN_PATH" value="$(arg gazebo_plugin_root):$(optenv GAZEBO_PLUGIN_PATH)"/>
-  <env name="GAZEBO_MODEL_PATH" value="$(arg gazebo_runtime_root)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+  <env name="GAZEBO_MODEL_PATH" value="$(arg gazebo_runtime_root)/models:$(arg gazebo_model_path_extra):$(optenv GAZEBO_MODEL_PATH)"/>
   <env name="LD_LIBRARY_PATH" value="$(arg gazebo_plugin_root):$(optenv LD_LIBRARY_PATH)"/>
 
   <arg unless="$(arg interactive)" name="px4_command_arg1" value="-d"/>
