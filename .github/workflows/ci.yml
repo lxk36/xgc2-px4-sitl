@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - v1.16-jazzy
+  pull_request:
+    branches:
+      - v1.16-jazzy
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and install-check runtime packages in Docker
+        run: |
+          .xgc2/scripts/build_runtime_deb_in_docker.sh \
+            --work-dir "$RUNNER_TEMP/px4-runtime-work-v1.16-jazzy-${{ matrix.arch }}" \
+            --output-dir "$GITHUB_WORKSPACE/debs"
+
+      - name: Upload deb artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: px4-sitl-runtime-debs-v1.16-jazzy-${{ matrix.arch }}
+          path: debs/*.deb
