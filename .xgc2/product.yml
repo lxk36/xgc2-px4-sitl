@@ -1,45 +1,45 @@
 schema: xgc2.product.v1
 id: xgc2-px4-sitl-114
 name: XGC2 PX4 SITL 1.14
-version: 1.14.4-6
+version: 1.14.4-7
 kind: ros1-apt
 summary: PX4 v1.14 SITL runtime and Gazebo Classic assets for ROS Noetic.
-
 ros:
   distro: noetic
   packages:
-    - px4_sitl_1_14
-    - gazebo_sim_px4_1_14
-
+  - px4_sitl_1_14
+  - gazebo_sim_px4_1_14
 apt:
   distribution: focal
   install:
-    - ros-noetic-xgc2-gazebo-sim-px4-1-14
+  - ros-noetic-xgc2-gazebo-sim-px4-1-14
   packages:
-    - ros-noetic-xgc2-px4-sitl-1-14
-    - ros-noetic-xgc2-gazebo-sim-px4-1-14
+  - ros-noetic-xgc2-px4-sitl-1-14
+  - ros-noetic-xgc2-gazebo-sim-px4-1-14
   depends:
-    - ros-noetic-xgc2-px4-sitl-1-14
-    - gazebo11
-    - ros-noetic-gazebo-ros
-    - ros-noetic-mavros
-
+  - ros-noetic-xgc2-px4-sitl-1-14
+  - gazebo11
+  - ros-noetic-gazebo-ros
+  - ros-noetic-mavros
 usage:
-  install: |
-    sudo apt update
-    sudo apt install ros-noetic-xgc2-gazebo-sim-px4-1-14
-  smoke_test: |
-    roslaunch --files gazebo_sim_px4_1_14 iris.launch
-  notes: |
-    Runtime entry scripts are installed from package scripts; packaging scripts stay under .xgc2/scripts.
+  install: 'sudo apt update
 
+    sudo apt install ros-noetic-xgc2-gazebo-sim-px4-1-14
+
+    '
+  smoke_test: 'roslaunch --files gazebo_sim_px4_1_14 iris.launch
+
+    '
+  notes: 'Runtime entry scripts are installed from package scripts; packaging scripts
+    stay under .xgc2/scripts.
+
+    '
 ownership:
   paths:
-    - /opt/ros/noetic/share/px4_sitl_1_14
-    - /opt/ros/noetic/share/gazebo_sim_px4_1_14
-    - /opt/ros/noetic/lib/px4_sitl_1_14
-    - /opt/ros/noetic/lib/gazebo_sim_px4_1_14
-
+  - /opt/ros/noetic/share/px4_sitl_1_14
+  - /opt/ros/noetic/share/gazebo_sim_px4_1_14
+  - /opt/ros/noetic/lib/px4_sitl_1_14
+  - /opt/ros/noetic/lib/gazebo_sim_px4_1_14
 release:
   repository: lxk36/xgc2-px4-sitl
   ref: v1.14-noetic
