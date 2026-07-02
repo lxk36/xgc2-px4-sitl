@@ -9,7 +9,15 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 RUNTIME_DIR="${RUNTIME_DIR:-}"
 GZ_SIM_DIR="${GZ_SIM_DIR:-}"
 OUTPUT_DIR="${OUTPUT_DIR:-${PWD}/debs}"
-PACKAGE_VERSION="$(require_manifest_value debian_version)"
+product_version() {
+  awk -F': *' '/^version:[[:space:]]*/ {print $2; exit}' "${REPO_ROOT}/.xgc2/product.yml"
+}
+
+PACKAGE_VERSION="${PACKAGE_VERSION:-$(product_version)}"
+if [[ -z "${PACKAGE_VERSION}" ]]; then
+  echo "package version is missing; set PACKAGE_VERSION or .xgc2/product.yml version" >&2
+  exit 1
+fi
 UPSTREAM_VERSION="${PACKAGE_VERSION%%-*}"
 ROS_DISTRO="$(require_manifest_value ros_distro)"
 RUNTIME_ROS_PACKAGE="$(require_manifest_value runtime_ros_package)"
