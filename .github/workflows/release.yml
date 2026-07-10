@@ -111,6 +111,7 @@ jobs:
       - name: Build and install-check runtime packages in Docker
         if: ${{ inputs.trusted_ci_run_id == '' }}
         run: |
+          install -d "$GITHUB_WORKSPACE/.ci/build-manifests"
           .xgc2/scripts/build_runtime_deb_in_docker.sh \
             --work-dir "$RUNNER_TEMP/px4-runtime-work-v1.12-noetic-${{ matrix.arch }}" \
             --output-dir "$GITHUB_WORKSPACE/debs"
