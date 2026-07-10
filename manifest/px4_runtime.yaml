@@ -1,12 +1,12 @@
 package_name: ros-jazzy-xgc2-gz-harmonic-px4-1-16
-debian_version: 1.16.2-1
+debian_version: 1.16.2-8
 px4_repo: https://github.com/PX4/PX4-Autopilot.git
 px4_tag: v1.16.2
 ros_distro: jazzy
 ubuntu_codename: noble
 architectures:
-  - amd64
-  - arm64
+- amd64
+- arm64
 runtime_ros_package: px4_sitl_runtime_1_16
 gazebo_ros_package: px4_gz_sim_1_16
 install_prefix: /opt/ros/jazzy/share/px4_sitl_runtime_1_16/runtime
