@@ -1,7 +1,7 @@
 schema: xgc2.product.v1
 id: xgc2-px4-sitl-114
 name: XGC2 PX4 SITL 1.14
-version: 1.14.4-11
+version: 1.14.4-12
 kind: ros1-apt
 summary: PX4 v1.14 SITL runtime and Gazebo Classic assets for ROS Noetic.
 ros:
@@ -17,7 +17,7 @@ apt:
   - ros-noetic-xgc2-px4-sitl-1-14
   - ros-noetic-xgc2-gazebo-sim-px4-1-14
   depends:
-  - ros-noetic-xgc2-px4-sitl-1-14
+  - ros-noetic-xgc2-px4-sitl-1-14 (>= 1.14.4-12)
   - gazebo11
   - ros-noetic-gazebo-ros
   - ros-noetic-mavros
