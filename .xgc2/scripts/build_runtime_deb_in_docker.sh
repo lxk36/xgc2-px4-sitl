@@ -48,6 +48,7 @@ if [[ "${PULL_IMAGE}" == "true" ]]; then
 fi
 
 docker run --rm \
+  -e XGC2_APT_OVERLAY_URL="${XGC2_APT_OVERLAY_URL:-}" \
   -e DEBIAN_FRONTEND=noninteractive \
   -e INSTALL_CHECK="${INSTALL_CHECK}" \
   -v "${REPO_ROOT}:/workspace/px4_sitl:ro" \
