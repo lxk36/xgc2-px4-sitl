@@ -10,6 +10,11 @@ catkin_install_python(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(PROGRAMS
+  scripts/run_px4_sitl.sh
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(
   DIRECTORY config launch manifest
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
