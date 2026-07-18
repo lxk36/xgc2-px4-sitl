@@ -20,6 +20,7 @@
   <arg name="uxrce_dds_ns" default=""/>
   <arg name="uxrce_dds_port" default=""/>
   <arg name="px4_extra_args" default=""/>
+  <arg name="mav_system_id" default="$(eval int(arg('ID')) + 1)"/>
 
   <arg name="x" default="0"/>
   <arg name="y" default="0"/>
@@ -39,6 +40,7 @@
   <arg name="verbose" default="false"/>
   <arg name="paused" default="false"/>
   <arg name="respawn_gazebo" default="false"/>
+  <arg name="start_gazebo" default="true"/>
 
   <arg name="fcu_url" default="$(eval 'udp://:' + str(14540 + int(arg('ID'))) + '@localhost:' + str(14580 + int(arg('ID'))))"/>
   <arg name="gcs_url" default=""/>
@@ -46,6 +48,7 @@
   <arg name="mavros_tgt_system" default="$(eval int(arg('ID')) + 1)"/>
   <arg name="respawn_mavros" default="false"/>
   <arg name="interactive" default="false"/>
+  <arg name="sitl_node_name" default="sitl"/>
 
   <env name="PX4_SIM_MODEL" value="$(arg px4_sim_model)"/>
   <env if="$(eval arg('sys_autostart') != '')" name="PX4_SYS_AUTOSTART" value="$(arg sys_autostart)"/>
@@ -57,6 +60,7 @@
   <env if="$(eval arg('param_file') != '')" name="PX4_SITL_PARAM_FILE" value="$(arg param_file)"/>
   <env if="$(eval arg('param_bson') != '')" name="PX4_SITL_PARAM_BSON" value="$(arg param_bson)"/>
   <env name="PX4_SITL_RESET_PARAMS" value="$(arg reset_params)"/>
+  <env name="PX4_SITL_MAV_SYS_ID" value="$(arg mav_system_id)"/>
   <env name="GAZEBO_PLUGIN_PATH" value="$(arg gazebo_plugin_root):$(optenv GAZEBO_PLUGIN_PATH)"/>
   <env name="GAZEBO_MODEL_PATH" value="$(arg gazebo_runtime_root)/models:$(arg gazebo_model_path_extra):$(optenv GAZEBO_MODEL_PATH)"/>
   <env name="LD_LIBRARY_PATH" value="$(arg gazebo_plugin_root):$(optenv LD_LIBRARY_PATH)"/>
@@ -64,10 +68,10 @@
   <arg unless="$(arg interactive)" name="px4_command_arg1" value="-d"/>
   <arg     if="$(arg interactive)" name="px4_command_arg1" value=""/>
 
-  <node name="sitl" pkg="px4_sitl_1_12" type="run_px4_sitl.sh" output="screen" required="true"
+  <node name="$(arg sitl_node_name)" pkg="px4_sitl_1_12" type="run_px4_sitl.sh" output="screen" required="true"
         args="--runtime-root $(arg runtime_root) --work-dir $(arg work_dir) --instance $(arg ID) --script $(arg startup_script) -- $(arg px4_command_arg1) $(arg px4_extra_args)"/>
 
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <include if="$(arg start_gazebo)" file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="gui" value="$(arg gui)"/>
     <arg name="world_name" value="$(arg world)"/>
     <arg name="debug" value="$(arg debug)"/>

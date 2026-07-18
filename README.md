@@ -218,6 +218,16 @@ startup_script   Runtime-relative or absolute PX4 startup script path.
 work_dir         Per-vehicle writable PX4 rootfs directory.
 ```
 
+To attach a vehicle to an already-running Gazebo Classic server, pass
+`start_gazebo:=false`. In that mode the launch still starts PX4, spawns the SDF
+through the existing `/gazebo/spawn_sdf_model` service, and starts MAVROS, but
+it never includes `gazebo_ros/empty_world.launch`. Set `ROS_MASTER_URI` and
+`GAZEBO_MASTER_URI` in the `roslaunch` process environment before invocation.
+For multiple attached vehicles, give each one a distinct `ID`, `model_name`,
+`work_dir`, SITL/Gazebo MAVLink port set, MAVROS local/remote port pair, and
+`sitl_node_name`. `mav_system_id` controls the PX4 `MAV_SYS_ID` independently
+from the process instance while `mavros_tgt_system` controls the MAVROS target.
+
 PX4 v1.14 / ROS Noetic:
 
 ```bash
