@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(gazebo_sim_px4_1_14)
 
-find_package(catkin REQUIRED COMPONENTS roslaunch)
+find_package(catkin REQUIRED)
 
 catkin_package()
 
