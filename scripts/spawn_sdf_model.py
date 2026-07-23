@@ -1,12 +1,33 @@
 #!/usr/bin/env python3
+"""Spawn one SDF model into Gazebo, owning preflight, replace, and verify.
+
+The orchestrator previously forked three Python processes per robot
+(rosservice preflight, this spawner, rosservice verification). One rospy
+process now performs the whole sequence, so each robot costs one interpreter
+start instead of three.
+
+Exit codes:
+  0  the model was spawned and is visible in Gazebo
+  4  the model already exists and --existing-model-policy is "fail"
+     (permanent: retrying without operator action cannot succeed)
+  1  any other failure (transient: Gazebo or ROS may still be starting)
+"""
 import argparse
+import json
 import math
 import sys
+import time
 import xml.etree.ElementTree as ET
 
 import rospy
-from gazebo_msgs.srv import SpawnModel
+from gazebo_msgs.srv import DeleteModel, GetModelState, SpawnModel
 from geometry_msgs.msg import Pose
+
+EXIT_TRANSIENT = 1
+EXIT_MODEL_EXISTS = 4
+SERVICE_WAIT_SECONDS = 30.0
+DELETE_WAIT_SECONDS = 5.0
+VERIFY_WAIT_SECONDS = 10.0
 
 
 def _set_plugin_tag(plugin, tag, value):
@@ -42,6 +63,25 @@ def quaternion_from_rpy(roll, pitch, yaw):
     )
 
 
+def service_proxy(name, service_type):
+    rospy.wait_for_service(name, timeout=SERVICE_WAIT_SECONDS)
+    return rospy.ServiceProxy(name, service_type)
+
+
+def model_exists(get_model_state, model):
+    return bool(get_model_state(model, "world").success)
+
+
+def wait_for_model(get_model_state, model, present, deadline_seconds):
+    deadline = time.monotonic() + deadline_seconds
+    while True:
+        if model_exists(get_model_state, model) == present:
+            return True
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.1)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sdf", required=True)
@@ -56,6 +96,9 @@ def main():
     parser.add_argument("--mavlink-udp-port", type=int, required=True)
     parser.add_argument("--qgc-udp-port", type=int, required=True)
     parser.add_argument("--sdk-udp-port", type=int, required=True)
+    parser.add_argument(
+        "--existing-model-policy", choices=("fail", "replace"), default="fail"
+    )
     args = parser.parse_args(rospy.myargv(argv=sys.argv)[1:])
 
     rospy.init_node("spawn_sdf_model", anonymous=True)
@@ -77,13 +120,38 @@ def main():
     pose.orientation.z = qz
     pose.orientation.w = qw
 
-    rospy.wait_for_service("/gazebo/spawn_sdf_model")
-    spawn = rospy.ServiceProxy("/gazebo/spawn_sdf_model", SpawnModel)
+    get_model_state = service_proxy("/gazebo/get_model_state", GetModelState)
+    replaced = False
+    if args.existing_model_policy == "replace" and model_exists(
+        get_model_state, args.model
+    ):
+        delete_model = service_proxy("/gazebo/delete_model", DeleteModel)
+        result = delete_model(args.model)
+        if not result.success:
+            rospy.logerr("DeleteModel failed: %s", result.status_message)
+            raise SystemExit(EXIT_TRANSIENT)
+        if not wait_for_model(get_model_state, args.model, False, DELETE_WAIT_SECONDS):
+            rospy.logerr("model %s still exists after delete_model", args.model)
+            raise SystemExit(EXIT_TRANSIENT)
+        replaced = True
+
+    spawn = service_proxy("/gazebo/spawn_sdf_model", SpawnModel)
     result = spawn(args.model, sdf, "", pose, "world")
     if not result.success:
+        # The fail policy skips the preflight, so an existing model surfaces
+        # here; distinguish it from transient Gazebo errors for the caller.
+        if args.existing_model_policy == "fail" and model_exists(
+            get_model_state, args.model
+        ):
+            rospy.logerr("model %s already exists", args.model)
+            raise SystemExit(EXIT_MODEL_EXISTS)
         rospy.logerr("SpawnModel failed: %s", result.status_message)
-        raise SystemExit(1)
+        raise SystemExit(EXIT_TRANSIENT)
+    if not wait_for_model(get_model_state, args.model, True, VERIFY_WAIT_SECONDS):
+        rospy.logerr("Gazebo did not report model %s after spawn", args.model)
+        raise SystemExit(EXIT_TRANSIENT)
     rospy.loginfo("SpawnModel: %s", result.status_message)
+    print("SPAWN_SDF_RESULT " + json.dumps({"replaced": replaced}), flush=True)
 
 
 if __name__ == "__main__":
